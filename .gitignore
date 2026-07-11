@@ -1,0 +1,26 @@
+# InfinityFree Deploy: vendor/ & .env uncommented (needed on server, no composer access)
+*.log
+.DS_Store
+# .env    -- UNCOMMENTED: needed on InfinityFree
+# .env.backup
+# .env.production
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+node_modules/    # Excluded: too large for InfinityFree's 1MB file limit
+# /public/build    -- UNCOMMENTED: compiled CSS/JS needed on InfinityFree (no npm access)
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+# /vendor    -- UNCOMMENTED: needed on InfinityFree (no composer access)
+Homestead.json
+Homestead.yaml
+Thumbs.db
+node_modules

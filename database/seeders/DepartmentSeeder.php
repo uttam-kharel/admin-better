@@ -1,0 +1,23 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Department;
+use Illuminate\Database\Seeder;
+
+class DepartmentSeeder extends Seeder
+{
+    public function run(): void
+    {
+        Department::insert([
+            ['id' => 1, 'slug' => 'cardiology', 'name' => 'Cardiology', 'tagline' => 'Heart & Vascular Center', 'description' => 'Comprehensive heart care including diagnostic imaging, electrophysiology, and minimally invasive structural heart interventions.', 'icon' => 'heart', 'image' => 'https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=1200&q=80', 'treatments' => json_encode(['Angioplasty', 'Coronary Bypass', 'Pacemaker Implant', 'TAVR', 'Heart Failure Program']), 'facilities' => json_encode(['Cath Lab', 'Echo Suite', 'Cardiac ICU', 'Stress Testing'])],
+            ['id' => 2, 'slug' => 'neurology', 'name' => 'Neurology', 'tagline' => 'Brain & Spine Institute', 'description' => 'Comprehensive stroke center and complex neuro-radiological procedures, supported by robotic precision surgical systems.', 'icon' => 'cpu-chip', 'image' => 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=1200&q=80', 'treatments' => json_encode(['Stroke Care', 'Epilepsy Surgery', 'Deep Brain Stimulation', 'Spine Surgery']), 'facilities' => json_encode(['Neuro ICU', 'Robotic Surgery Suite', 'EEG Lab'])],
+            ['id' => 3, 'slug' => 'oncology', 'name' => 'Oncology', 'tagline' => 'Comprehensive Cancer Center', 'description' => 'Immunotherapy and personalized genetic mapping for targeted tumor therapy across solid and hematologic malignancies.', 'icon' => 'arrow-trending-up', 'image' => 'https://images.unsplash.com/photo-1582719471384-894fbb16e074?auto=format&fit=crop&w=1200&q=80', 'treatments' => json_encode(['Chemotherapy', 'Immunotherapy', 'Radiation Therapy', 'Bone Marrow Transplant']), 'facilities' => json_encode(['Linear Accelerator', 'PET-CT', 'Day Care Chemo'])],
+            ['id' => 4, 'slug' => 'orthopedics', 'name' => 'Orthopedics', 'tagline' => 'Joints & Sports Medicine', 'description' => 'Joint replacement excellence using precision robotic surgical systems and a dedicated sports rehabilitation program.', 'icon' => 'shield-check', 'image' => 'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=1200&q=80', 'treatments' => json_encode(['Knee Replacement', 'Hip Replacement', 'Arthroscopy', 'Spine Surgery']), 'facilities' => json_encode(['Robotic OR', 'Sports Rehab Gym', 'MRI'])],
+            ['id' => 5, 'slug' => 'pediatrics', 'name' => 'Pediatrics', 'tagline' => 'Children & Newborn Care', 'description' => 'Specialized neonatal intensive care and behavioral development support with a child-friendly environment.', 'icon' => 'user-group', 'image' => 'https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&w=1200&q=80', 'treatments' => json_encode(['NICU Care', 'Pediatric Surgery', 'Vaccination', 'Developmental Pediatrics']), 'facilities' => json_encode(['Level III NICU', 'Pediatric OR', 'Play Therapy'])],
+            ['id' => 6, 'slug' => 'gastroenterology', 'name' => 'Gastroenterology', 'tagline' => 'Digestive Health', 'description' => 'Diagnosis and management of complex digestive, liver, and pancreatic conditions with advanced endoscopy.', 'icon' => 'beaker', 'image' => 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1200&q=80', 'treatments' => json_encode(['Endoscopy', 'Colonoscopy', 'Liver Care', 'IBD Management']), 'facilities' => json_encode(['Endoscopy Suite', 'Hepatology Clinic'])],
+            ['id' => 7, 'slug' => 'ophthalmology', 'name' => 'Ophthalmology', 'tagline' => 'Comprehensive Eye Care', 'description' => 'Refractive, cataract, and retinal services with the latest femtosecond laser platforms.', 'icon' => 'eye', 'image' => 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80', 'treatments' => json_encode(['Cataract Surgery', 'LASIK', 'Retina Care', 'Glaucoma']), 'facilities' => json_encode(['Laser Suite', 'Pediatric Eye Clinic'])],
+            ['id' => 8, 'slug' => 'internal-medicine', 'name' => 'Internal Medicine', 'tagline' => 'Adult Primary Care', 'description' => 'Holistic management of chronic illnesses and evidence-based preventative screenings.', 'icon' => 'clipboard-document-list', 'image' => 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80', 'treatments' => json_encode(['Diabetes Care', 'Hypertension', 'Thyroid Disorders', 'Preventive Health']), 'facilities' => json_encode(['OPD Clinics', 'Day Care'])],
+        ]);
+    }
+}

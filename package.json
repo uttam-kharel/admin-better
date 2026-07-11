@@ -1,0 +1,26 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "CHOKIDAR_USEPOLLING=1 vite",
+        "dev:serve": "php -c php-dev.ini artisan serve --host=0.0.0.0 --port=8001",
+        "dev:all": "concurrently -n vite,laravel -c cyan,green 'npm run dev' 'npm run dev:serve'"
+    },
+    "devDependencies": {
+        "@tailwindcss/vite": "^4.0.0",
+        "axios": "^1.11.0",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^2.0.0",
+        "tailwindcss": "^4.0.0",
+        "vite": "^7.0.7"
+    },
+    "dependencies": {
+        "@alpinejs/collapse": "^3.15.12",
+        "@fontsource/public-sans": "^5.2.7",
+        "alpinejs": "^3.15.12",
+        "daisyui": "^5.5.23",
+        "tw-animate-css": "^1.4.0"
+    }
+}

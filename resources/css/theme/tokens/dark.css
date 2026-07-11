@@ -1,0 +1,50 @@
+/* ===========================================================================
+ * Dark theme tokens
+ * Overrides the light values when .dark is present on a parent element.
+ * ======================================================================== */
+
+.dark {
+  --background: oklch(0.16 0.025 250);
+  --foreground: oklch(0.97 0.005 240);
+  --surface: oklch(0.20 0.03 250);
+  --surface-muted: oklch(0.23 0.03 250);
+
+  --card: oklch(0.20 0.03 250);
+  --card-foreground: oklch(0.97 0.005 240);
+  --popover: oklch(0.20 0.03 250);
+  --popover-foreground: oklch(0.97 0.005 240);
+
+  --primary: oklch(0.75 0.11 220);
+  --primary-foreground: oklch(0.18 0.03 250);
+  --primary-soft: oklch(0.30 0.07 250);
+
+  --secondary: oklch(0.72 0.10 195);
+  --secondary-foreground: oklch(0.18 0.03 250);
+  --secondary-soft: oklch(0.30 0.05 195);
+
+  --accent: oklch(0.30 0.07 250);
+  --accent-foreground: oklch(0.97 0.005 240);
+
+  --emergency: oklch(0.65 0.22 17);
+  --emergency-foreground: oklch(0.99 0.003 240);
+  --emergency-soft: oklch(0.30 0.10 17);
+
+  --muted: oklch(0.25 0.03 250);
+  --muted-foreground: oklch(0.70 0.02 245);
+
+  --destructive: oklch(0.65 0.22 17);
+  --destructive-foreground: oklch(0.99 0.003 240);
+
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.72 0.10 195);
+
+  --sidebar: oklch(0.20 0.03 250);
+  --sidebar-foreground: oklch(0.97 0.005 240);
+  --sidebar-primary: oklch(0.75 0.11 220);
+  --sidebar-primary-foreground: oklch(0.18 0.03 250);
+  --sidebar-accent: oklch(0.30 0.07 250);
+  --sidebar-accent-foreground: oklch(0.97 0.005 240);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.72 0.10 195);
+}

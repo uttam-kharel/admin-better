@@ -1,0 +1,21 @@
+/* ===========================================================================
+ * App entry
+ * Imports the design system. Order matters:
+ *   1. Tailwind core + animation/font sources
+ *   2. Theme config (requires tailwind first)
+ *   3. Tokens, base layer, custom utilities
+ * ======================================================================== */
+
+@import "tailwindcss" source(none);
+@source "../../resources";
+@import "tw-animate-css";
+@import "@fontsource/public-sans/400.css";
+@import "@fontsource/public-sans/500.css";
+@import "@fontsource/public-sans/600.css";
+@import "@fontsource/public-sans/700.css";
+@import "@fontsource/public-sans/800.css";
+
+@import "./theme/index.css";
+@import "./theme/tokens/index.css";
+@import "./base/index.css";
+@import "./utilities/index.css";

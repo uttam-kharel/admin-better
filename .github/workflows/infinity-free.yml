@@ -1,0 +1,30 @@
+name: Deploy to InfinityFree
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy via FTP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get latest code
+        uses: actions/checkout@v4
+
+      - name: Deploy to InfinityFree via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ftpupload.net
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: /htdocs/       # Use /htdocs/ for main domain
+          # For addon domains, use: /yourdomain.com/htdocs/
+          timeout: 86400000
+          log-level: standard
+          exclude: |
+            - node_modules/
+            - .git/

@@ -1,0 +1,3 @@
+/* Base entry — global resets + scrollbar styling. */
+@import "./reset.css";
+@import "./scrollbar.css";

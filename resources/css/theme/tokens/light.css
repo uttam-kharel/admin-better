@@ -1,0 +1,58 @@
+/* ===========================================================================
+ * Light theme tokens
+ * Source-of-truth CSS variables (light mode). Consumed by theme/index.css.
+ * ======================================================================== */
+
+:root {
+  --radius: 0.75rem;
+
+  --background: oklch(0.985 0.003 240);
+  --foreground: oklch(0.18 0.03 250);
+  --surface: oklch(1 0 0);
+  --surface-muted: oklch(0.965 0.006 240);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.03 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.03 250);
+
+  --primary: oklch(0.38 0.11 250);
+  --primary-foreground: oklch(0.99 0.003 240);
+  --primary-soft: oklch(0.95 0.025 250);
+
+  --secondary: oklch(0.62 0.10 195);
+  --secondary-foreground: oklch(0.99 0.003 240);
+  --secondary-soft: oklch(0.95 0.02 195);
+
+  --accent: oklch(0.95 0.025 250);
+  --accent-foreground: oklch(0.38 0.11 250);
+
+  --emergency: oklch(0.55 0.20 17);
+  --emergency-foreground: oklch(0.99 0.003 240);
+  --emergency-soft: oklch(0.96 0.03 17);
+
+  --muted: oklch(0.96 0.005 240);
+  --muted-foreground: oklch(0.50 0.02 245);
+
+  --destructive: oklch(0.55 0.20 17);
+  --destructive-foreground: oklch(0.99 0.003 240);
+
+  --border: oklch(0.92 0.008 240);
+  --input: oklch(0.92 0.008 240);
+  --ring: oklch(0.62 0.10 195);
+
+  --chart-1: oklch(0.38 0.11 250);
+  --chart-2: oklch(0.62 0.10 195);
+  --chart-3: oklch(0.70 0.13 80);
+  --chart-4: oklch(0.55 0.20 17);
+  --chart-5: oklch(0.55 0.15 145);
+
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.18 0.03 250);
+  --sidebar-primary: oklch(0.38 0.11 250);
+  --sidebar-primary-foreground: oklch(0.99 0.003 240);
+  --sidebar-accent: oklch(0.95 0.025 250);
+  --sidebar-accent-foreground: oklch(0.38 0.11 250);
+  --sidebar-border: oklch(0.92 0.008 240);
+  --sidebar-ring: oklch(0.62 0.10 195);
+}
