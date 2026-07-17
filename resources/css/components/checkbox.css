@@ -1,0 +1,53 @@
+/* ===========================================================================
+ * Components: checkbox
+ * Base checkbox component styles.
+ * ======================================================================== */
+
+@layer components {
+  .checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+  }
+
+  .checkbox input[type="checkbox"] {
+    appearance: none;
+    width: 1rem;
+    height: 1rem;
+    border: 1px solid var(--color-input);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-surface);
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+
+  .checkbox input[type="checkbox"]:checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .checkbox input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    left: 0.25rem;
+    top: 0.125rem;
+    width: 0.25rem;
+    height: 0.5rem;
+    border: solid var(--color-primary-foreground);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .checkbox input[type="checkbox"]:focus {
+    box-shadow: 0 0 0 3px var(--color-ring-offset-background), 0 0 0 5px var(--color-ring);
+  }
+
+  .checkbox:has(input:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

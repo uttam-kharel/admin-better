@@ -1,0 +1,5 @@
+/* Layouts entry — loads all layout layers. */
+@import "./public.css";
+@import "./dashboard.css";
+@import "./auth.css";
+@import "./patient.css";

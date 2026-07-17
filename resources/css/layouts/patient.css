@@ -1,0 +1,39 @@
+/* ===========================================================================
+ * Layouts: patient
+ * Patient portal layout styles.
+ * ======================================================================== */
+
+@layer layouts {
+  .layout-patient {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  .layout-patient main {
+    flex: 1;
+  }
+
+  .layout-patient-header {
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    padding-block: 1rem;
+  }
+
+  .layout-patient-header-inner {
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+    @media (min-width: 640px) {
+      padding-inline: 1.5rem;
+    }
+    @media (min-width: 1024px) {
+      padding-inline: 2rem;
+    }
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

@@ -2,8 +2,12 @@
  * App entry
  * Imports the design system. Order matters:
  *   1. Tailwind core + animation/font sources
- *   2. Theme config (requires tailwind first)
- *   3. Tokens, base layer, custom utilities
+ *   2. Design tokens (raw values)
+ *   3. Foundation layer (semantic tokens, theme config, base utilities)
+ *   4. Base layer (reset, scrollbar)
+ *   5. Components layer
+ *   6. Layouts layer
+ *   7. Pages layer
  * ======================================================================== */
 
 @import "tailwindcss" source(none);
@@ -15,7 +19,9 @@
 @import "@fontsource/public-sans/700.css";
 @import "@fontsource/public-sans/800.css";
 
-@import "./theme/index.css";
 @import "./theme/tokens/index.css";
+@import "./foundation/index.css";
 @import "./base/index.css";
-@import "./utilities/index.css";
+@import "./components/index.css";
+@import "./layouts/index.css";
+@import "./pages/index.css";

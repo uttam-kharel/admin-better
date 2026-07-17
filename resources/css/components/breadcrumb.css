@@ -1,0 +1,41 @@
+/* ===========================================================================
+ * Components: breadcrumb
+ * Breadcrumb navigation component styles.
+ * ======================================================================== */
+
+@layer components {
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--color-muted-foreground);
+  }
+
+  .breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .breadcrumb-link {
+    color: var(--color-muted-foreground);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .breadcrumb-link:hover {
+    color: var(--color-primary);
+  }
+
+  .breadcrumb-separator {
+    color: var(--color-muted-foreground);
+  }
+
+  .breadcrumb-current {
+    color: var(--color-foreground);
+    font-weight: var(--font-weight-medium);
+  }
+}

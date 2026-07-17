@@ -1,0 +1,10 @@
+/* Pages entry — loads all page layers. */
+
+/* Pages should never contain CSS per the design system architecture.
+ * This file exists as a structural entry point. Any page-specific styles
+ * should live in the corresponding layout or component layer instead. */
+@import "./home.css";
+@import "./doctors.css";
+@import "./departments.css";
+@import "./services.css";
+@import "./blog.css";

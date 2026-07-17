@@ -1,0 +1,29 @@
+/* ===========================================================================
+ * Pages: doctors
+ * Page-specific overrides for the doctors listing page.
+ * ======================================================================== */
+
+@layer pages {
+  .page-doctors .filters-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: end;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+
+  .page-doctors .doctors-grid {
+    display: grid;
+    gap: 1.5rem;
+    @media (min-width: 640px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}

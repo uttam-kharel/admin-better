@@ -1,0 +1,60 @@
+/* ===========================================================================
+ * Components: alert
+ * Alert/notification component styles.
+ * ======================================================================== */
+
+@layer components {
+  .alert {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid transparent;
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+  }
+
+  .alert-primary {
+    background-color: var(--color-primary-soft);
+    color: var(--color-primary);
+    border-color: color-mix(in oklch, var(--color-primary) 20%, transparent);
+  }
+
+  .alert-secondary {
+    background-color: var(--color-secondary-soft);
+    color: var(--color-secondary);
+    border-color: color-mix(in oklch, var(--color-secondary) 20%, transparent);
+  }
+
+  .alert-emergency {
+    background-color: var(--color-emergency-soft);
+    color: var(--color-emergency);
+    border-color: color-mix(in oklch, var(--color-emergency) 20%, transparent);
+  }
+
+  .alert-destructive {
+    background-color: var(--color-destructive);
+    color: var(--color-destructive-foreground);
+  }
+
+  .alert-muted {
+    background-color: var(--color-muted);
+    color: var(--color-muted-foreground);
+    border-color: var(--color-border);
+  }
+
+  .alert-icon {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .alert-title {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .alert-description {
+    margin-top: 0.25rem;
+    opacity: 0.9;
+  }
+}

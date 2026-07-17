@@ -1,0 +1,67 @@
+/* ===========================================================================
+ * Components: timeline
+ * Timeline component styles.
+ * ======================================================================== */
+
+@layer components {
+  .timeline {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .timeline-item {
+    display: flex;
+    gap: 1rem;
+    position: relative;
+  }
+
+  .timeline-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .timeline-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: var(--radius-full);
+    background-color: var(--color-primary);
+    border: 2px solid var(--color-primary-soft);
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+  }
+
+  .timeline-line {
+    width: 2px;
+    flex: 1;
+    background-color: var(--color-border);
+    margin-top: 0.25rem;
+  }
+
+  .timeline-content {
+    flex: 1;
+    padding-bottom: 0.5rem;
+  }
+
+  .timeline-title {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--leading-tight);
+  }
+
+  .timeline-description {
+    margin-top: 0.25rem;
+    font-size: var(--text-sm);
+    color: var(--color-muted-foreground);
+    line-height: var(--leading-normal);
+  }
+
+  .timeline-time {
+    margin-top: 0.25rem;
+    font-size: var(--text-xs);
+    color: var(--color-muted-foreground);
+  }
+}
