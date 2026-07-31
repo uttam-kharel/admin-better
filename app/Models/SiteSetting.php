@@ -29,6 +29,7 @@ class SiteSetting extends Model
         'contact_page',
         'appointment_sidebar',
         'careers_page',
+        'theme',
     ];
 
     protected function casts(): array
@@ -44,6 +45,7 @@ class SiteSetting extends Model
             'contact_page' => 'array',
             'appointment_sidebar' => 'array',
             'careers_page' => 'array',
+            'theme' => 'array',
         ];
     }
 }

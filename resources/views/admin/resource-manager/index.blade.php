@@ -629,6 +629,7 @@ public string $resource;
                     $this->field('contact_page', 'Contact Page', 'json', placeholder: '{"eyebrow":"Contact","title":"We\'re here for you, 24/7","patient_helpline_label":"Patient helpline","patient_helpline":"1-800-123-4567","emergency_label":"Emergency","emergency_phone":"1-800-999-9999","email_label":"Email","email":"care@lumina.health","opd_label":"OPD hours","opd_hours":"Mon\u2013Sat \u00b7 8 AM \u2013 8 PM","location_label":"Main hospital","address":"1500 Medical Plaza, New York, NY 10001","map_placeholder":"Interactive map placeholder"}'),
                     $this->field('appointment_sidebar', 'Appointment Sidebar', 'json', placeholder: '{"call_label":"Call us","helpline":"1-800-123-4567","helpline_note":"24/7 patient helpline","hours_label":"OPD Hours","hours":"Mon\u2013Sat \u00b7 8:00 AM \u2013 8:00 PM","emergency_note":"Emergency 24/7","location_label":"Location","location":"1500 Medical Plaza","location_city":"New York, NY"}'),
                     $this->field('careers_page', 'Careers Page Content', 'json', placeholder: '{"hero_eyebrow":"Careers","hero_title":"Your Career. Our Mission. Together, We Heal.","hero_subtitle":"At Shubham International Hospital...","why_eyebrow":"Why Shubham International","why_title":"More than a workplace. A mission.","why_subtitle":"We offer rich opportunities...","why_items":[{"icon":"users","title":"Collaborative Culture","text":"Work alongside internationally trained specialists..."},{"icon":"edit","title":"Growth & Development","text":"Continuous learning opportunities..."},{"icon":"heart","title":"Comprehensive Benefits","text":"Competitive compensation..."},{"icon":"activity","title":"Impactful Work","text":"Every role contributes to our mission..."}],"contact_eyebrow":"Get in Touch","contact_title":"Have questions about your next career move?","contact_subtitle":"Our HR team is here to help...","contact_phone_label":"Phone","contact_phone":"+977-9809090909","contact_email_label":"Email","contact_email":"careers@shubham.intl","contact_address_label":"Address","contact_address":"Manamaiju, Kathmandu, Nepal","search_placeholder":"Search jobs by title, department, or location\u2026","search_cta":"View All Openings"}'),
+                    $this->field('theme', 'Theme Colors', 'json', placeholder: '{"primary":"oklch(0.38 0.11 250)","primary_foreground":"oklch(0.99 0.003 240)","primary_soft":"oklch(0.95 0.025 250)","secondary":"oklch(0.62 0.10 195)","secondary_foreground":"oklch(0.99 0.003 240)","secondary_soft":"oklch(0.95 0.02 195)","emergency":"oklch(0.55 0.20 17)","emergency_foreground":"oklch(0.99 0.003 240)","emergency_soft":"oklch(0.96 0.03 17)"}', helper: 'Override brand colors using oklch values. Leave empty to use CSS defaults.'),
                 ],
             ],
             'admin-users' => [
@@ -694,7 +695,7 @@ public string $resource;
             @endif
         </div>
         <x-ui.button wire:click="create">
-            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            @svg('lucide-plus', 'h-4 w-4')
             New
         </x-ui.button>
     </div>
@@ -757,14 +758,14 @@ public string $resource;
                             <td class="px-4 py-3 text-right whitespace-nowrap">
                                 @if($viewable)
                                     <button wire:click="view(@js($item->getKey()))" class="p-1.5 rounded hover:bg-muted text-foreground/70 hover:text-foreground" aria-label="View details">
-                                        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                        @svg('lucide-eye', 'h-4 w-4')
                                     </button>
                                 @endif
                                 <button wire:click="edit(@js($item->getKey()))" class="p-1.5 rounded hover:bg-muted text-foreground/70 hover:text-foreground" aria-label="Edit">
-                                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                    @svg('lucide-pencil', 'h-4 w-4')
                                 </button>
                                 <button wire:click="delete(@js($item->getKey()))" wire:confirm="Delete this record?" class="p-1.5 rounded hover:bg-muted text-foreground/70 hover:text-emergency ml-1" aria-label="Delete">
-                                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                    @svg('lucide-trash-2', 'h-4 w-4')
                                 </button>
                             </td>
                         </tr>
@@ -812,13 +813,13 @@ public string $resource;
                                     <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{{ $field['label'] }}</span>
                                     @if($val)
                                         <div class="mt-2 flex items-center gap-3 p-4 rounded-lg border border-border bg-muted/20">
-                                            <svg class="h-8 w-8 text-primary shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                            @svg('lucide-file-text', 'h-8 w-8 text-primary shrink-0')
                                             <div class="min-w-0 flex-1">
                                                 <p class="text-sm font-medium truncate">{{ basename($val) }}</p>
                                                 <p class="text-xs text-muted-foreground">Uploaded document</p>
                                             </div>
                                             <a href="{{ Storage::url($val) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 shrink-0">
-                                                <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                                @svg('lucide-download', 'h-3.5 w-3.5')
                                                 Download
                                             </a>
                                         </div>

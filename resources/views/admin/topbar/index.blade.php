@@ -46,13 +46,13 @@ public function render()
 ?>
 <header class="h-16 shrink-0 border-b border-border bg-background flex items-center px-4 lg:px-6 gap-3">
     <button type="button" class="lg:hidden p-2 rounded-md hover:bg-muted min-h-11 min-w-11 grid place-items-center" aria-label="Open sidebar" @click="$dispatch('toggle-admin-sidebar')">
-        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+        @svg('lucide-menu', 'h-5 w-5')
     </button>
     <div class="flex-1 min-w-0">
         <h1 class="text-lg font-semibold tracking-tight truncate">{{ $title }}</h1>
     </div>
     <a href="/" target="_blank" rel="noreferrer" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-md border border-border">
-        View site <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+        View site @svg('lucide-external-link', 'h-3.5 w-3.5')
     </a>
     @auth('admin')
         <div class="flex items-center gap-3">
@@ -67,7 +67,7 @@ public function render()
             <form method="POST" action="{{ route('admin.logout') }}" class="inline">
                 @csrf
                 <button type="submit" class="p-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground" aria-label="Log out" title="Log out">
-                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+                    @svg('lucide-log-out', 'h-4 w-4')
                 </button>
             </form>
         </div>

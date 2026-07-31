@@ -1,19 +1,3 @@
-<?php
-
-use Livewire\Component;
-use App\Models\Department;
-
-
-new class extends Component
-{
-public function render()
-    {
-        $departments = Department::all();
-        return $this->view(['departments' => $departments]);
-    }
-};
-
-?>
 <div>
     <x-sections.page-hero eyebrow="Specialties" title="Centers of excellence" subtitle="Multidisciplinary teams delivering specialized care across 40+ medical fields." />
 
@@ -34,7 +18,7 @@ public function render()
                         <h3 class="text-xl font-semibold group-hover:text-primary transition-colors">{{ $d->name }}</h3>
                         <p class="text-sm text-muted-foreground mt-2 leading-relaxed">{{ $d->description }}</p>
                         <p class="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                            Explore <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                            Explore @svg('lucide-chevron-right', 'h-4 w-4')
                         </p>
                     </div>
                 </a>

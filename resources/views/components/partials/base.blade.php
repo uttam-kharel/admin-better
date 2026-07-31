@@ -11,6 +11,8 @@
     {{-- Per-layout <head> extras: meta tags, robots, OG tags, etc. --}}
     {{ $head ?? '' }}
 
+    <x-theme-colors />
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>

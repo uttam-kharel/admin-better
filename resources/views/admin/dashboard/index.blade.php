@@ -83,7 +83,7 @@ public array $tiles = [];
                 <div class="px-5 py-4 border-b border-border flex items-center justify-between">
                     <h3 class="font-semibold text-sm">Recent appointments</h3>
                     <a href="{{ route('admin.appointments') }}" class="text-xs text-primary font-semibold inline-flex items-center gap-1">
-                        View all <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        View all @svg('lucide-arrow-right', 'h-3 w-3')
                     </a>
                 </div>
                 @if($recentAppointments->count() === 0)
@@ -107,7 +107,7 @@ public array $tiles = [];
                 <div class="px-5 py-4 border-b border-border flex items-center justify-between">
                     <h3 class="font-semibold text-sm">Recent applicants</h3>
                     <a href="{{ route('admin.job-applications') }}" class="text-xs text-primary font-semibold inline-flex items-center gap-1">
-                        View all <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        View all @svg('lucide-arrow-right', 'h-3 w-3')
                     </a>
                 </div>
                 @if($recentApplicants->count() === 0)
@@ -131,7 +131,7 @@ public array $tiles = [];
                 <div class="px-5 py-4 border-b border-border flex items-center justify-between">
                     <h3 class="font-semibold text-sm">Recent contact messages</h3>
                     <a href="{{ route('admin.contact-submissions') }}" class="text-xs text-primary font-semibold inline-flex items-center gap-1">
-                        View all <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        View all @svg('lucide-arrow-right', 'h-3 w-3')
                     </a>
                 </div>
                 @if($recentContacts->count() === 0)

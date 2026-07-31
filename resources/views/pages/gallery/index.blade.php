@@ -1,22 +1,3 @@
-<?php
-
-use Livewire\Component;
-use App\Models\GalleryItem;
-
-
-new class extends Component
-{
-public string $selectedCategory = '';
-
-    public function render()
-    {
-        $items = GalleryItem::all();
-        $categories = $items->pluck('category')->unique();
-        return $this->view(['items' => $items, 'categories' => $categories]);
-    }
-};
-
-?>
 <div>
     <section class="bg-gradient-to-b from-primary-soft to-background">
         <div class="container-page py-12 md:py-16">

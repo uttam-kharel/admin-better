@@ -1,3 +1,0 @@
-/* Theme tokens entry — loads light then dark overrides. */
-@import "./light.css";
-@import "./dark.css";

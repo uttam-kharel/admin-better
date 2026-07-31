@@ -1,19 +1,3 @@
-<?php
-
-use Livewire\Component;
-use App\Models\Service;
-
-
-new class extends Component
-{
-public function render()
-    {
-        $services = Service::all();
-        return $this->view(['services' => $services]);
-    }
-};
-
-?>
 <div>
     <x-sections.page-hero eyebrow="Services" title="Comprehensive care, end to end" />
 

@@ -1,28 +1,29 @@
 <?php
 
+use App\Livewire\Pages;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes
-Route::livewire('/', 'pages::homepage.index')->name('home');
+Route::livewire('/', Pages\HomepageIndex::class)->name('home');
 
-Route::livewire('/services', 'pages::services.index')->name('services.index');
-Route::livewire('/services/{slug}', 'pages::services.show')->name('services.show');
+Route::livewire('/services', Pages\ServicesIndex::class)->name('services.index');
+Route::livewire('/services/{slug}', Pages\ServicesShow::class)->name('services.show');
 
-Route::livewire('/doctors', 'pages::doctors.index')->name('doctors.index');
-Route::livewire('/doctors/{slug}', 'pages::doctors.show')->name('doctors.show');
+Route::livewire('/doctors', Pages\DoctorsIndex::class)->name('doctors.index');
+Route::livewire('/doctors/{slug}', Pages\DoctorsShow::class)->name('doctors.show');
 
-Route::livewire('/departments', 'pages::departments.index')->name('departments.index');
-Route::livewire('/departments/{slug}', 'pages::departments.show')->name('departments.show');
+Route::livewire('/departments', Pages\DepartmentsIndex::class)->name('departments.index');
+Route::livewire('/departments/{slug}', Pages\DepartmentsShow::class)->name('departments.show');
 
-Route::livewire('/blogs', 'pages::blogs.index')->name('blogs.index');
-Route::livewire('/blogs/{slug}', 'pages::blogs.show')->name('blogs.show');
+Route::livewire('/blogs', Pages\BlogsIndex::class)->name('blogs.index');
+Route::livewire('/blogs/{slug}', Pages\BlogsShow::class)->name('blogs.show');
 
 Route::livewire('/health-packages', 'pages::health-packages.index')->name('health-packages');
-Route::livewire('/gallery', 'pages::gallery.index')->name('gallery');
-Route::livewire('/careers', 'pages::careers.index')->name('careers');
-Route::livewire('/careers/{slug}', 'pages::careers.show')->name('careers.show');
-Route::livewire('/contact', 'pages::contact.index')->name('contact');
-Route::livewire('/appointment', 'pages::appointment.index')->name('appointment');
+Route::livewire('/gallery', Pages\GalleryIndex::class)->name('gallery');
+Route::livewire('/careers', Pages\CareersIndex::class)->name('careers');
+Route::livewire('/careers/{slug}', Pages\CareersShow::class)->name('careers.show');
+Route::livewire('/contact', Pages\ContactIndex::class)->name('contact');
+Route::livewire('/appointment', Pages\AppointmentIndex::class)->name('appointment');
 Route::livewire('/pages/{slug}', 'pages::page.show')->name('page');
 
 // Admin Routes

@@ -170,7 +170,7 @@ public string $search = '';
             <p class="text-sm text-muted-foreground mt-1">Manage top-level header menu entries and their nested items.</p>
         </div>
         <x-ui.button wire:click="create">
-            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg> New top-level item
+            @svg('lucide-plus', 'h-4 w-4') New top-level item
         </x-ui.button>
     </div>
 
@@ -193,12 +193,12 @@ public string $search = '';
                         <div class="flex items-center gap-2 px-4 py-3 hover:bg-muted/30 transition-colors">
                             <button wire:click="toggleExpand({{ $parent['id'] }})" class="p-1 rounded hover:bg-muted text-muted-foreground" aria-label="{{ $isOpen ? 'Collapse' : 'Expand' }}">
                                 @if($hasChildren)
-                                    <svg class="h-4 w-4 {{ $isOpen ? '' : '-rotate-90' }}" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                                    @svg('lucide-chevron-down', 'h-4 w-4 ' . ($isOpen ? '' : '-rotate-90'))
                                 @else
                                     <span class="w-4 block"></span>
                                 @endif
                             </button>
-                            <svg class="h-4 w-4 text-muted-foreground/40 shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="1"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="9" r="1"/><circle cx="15" cy="15" r="1"/></svg>
+                            @svg('lucide-grip-vertical', 'h-4 w-4 text-muted-foreground/40 shrink-0')
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-2">
                                     <span class="text-sm font-medium">{{ $parent['title'] }}</span>
@@ -211,13 +211,13 @@ public string $search = '';
                                 </div>
                             </div>
                             <button wire:click="create({{ $parent['id'] }})" class="p-1.5 rounded hover:bg-muted text-muted-foreground/70 hover:text-foreground text-xs" title="Add child item">
-                                <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                                @svg('lucide-plus', 'h-3.5 w-3.5')
                             </button>
                             <button wire:click="edit({{ $parent['id'] }})" class="p-1.5 rounded hover:bg-muted text-muted-foreground/70 hover:text-foreground" aria-label="Edit">
-                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                @svg('lucide-pencil', 'h-4 w-4')
                             </button>
                             <button wire:click="delete({{ $parent['id'] }})" wire:confirm="Delete '{{ $parent['title'] }}'? {{ $hasChildren ? count($parent['children']) . ' child items will also be deleted.' : '' }}" class="p-1.5 rounded hover:bg-muted text-muted-foreground/70 hover:text-emergency" aria-label="Delete">
-                                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                @svg('lucide-trash-2', 'h-4 w-4')
                             </button>
                         </div>
 
@@ -245,10 +245,10 @@ public string $search = '';
                                             </div>
                                         </div>
                                         <button wire:click="edit({{ $child['id'] }})" class="p-1.5 rounded hover:bg-muted text-muted-foreground/70 hover:text-foreground" aria-label="Edit">
-                                            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                            @svg('lucide-pencil', 'h-4 w-4')
                                         </button>
                                         <button wire:click="delete({{ $child['id'] }})" wire:confirm="Delete '{{ $child['title'] }}'?" class="p-1.5 rounded hover:bg-muted text-muted-foreground/70 hover:text-emergency" aria-label="Delete">
-                                            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                            @svg('lucide-trash-2', 'h-4 w-4')
                                         </button>
                                     </div>
                                 @endforeach

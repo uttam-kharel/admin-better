@@ -1,55 +1,3 @@
-<?php
-
-use App\Models\Doctor;
-use App\Models\Department;
-use Livewire\Component;
-use Livewire\WithPagination;
-
-new class extends Component
-{
-
-    public string $search = '';
-    public string $departmentSlug = '';
-    public int $perPage = 12;
-
-    public function updatingSearch(): void
-    {
-        $this->resetPage();
-    }
-
-    public function updatingDepartmentSlug(): void
-    {
-        $this->resetPage();
-    }
-
-    public function render()
-    {
-        $query = Doctor::query();
-
-        if ($this->search) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', "%{$this->search}%")
-                  ->orWhere('designation', 'like', "%{$this->search}%")
-                  ->orWhere('department', 'like', "%{$this->search}%");
-            });
-        }
-
-        if ($this->departmentSlug) {
-            $query->where('department_slug', $this->departmentSlug);
-        }
-
-        $doctors = $query->paginate($this->perPage);
-        $departments = Department::all();
-
-        return $this->view([
-            'doctors' => $doctors,
-            'departments' => $departments,
-        ])->layout('layouts.public', ['title' => 'Our Doctors — Shubham International Hospital']);
-    }
-};
-
-?>
-
 <div>
     <x-sections.page-hero eyebrow="Find a Doctor" title="Meet our specialists" subtitle="Search by name or browse by department to find the right physician for your care.">
         <div class="mt-8 grid sm:grid-cols-[1fr_240px] gap-3 max-w-3xl">
@@ -74,7 +22,7 @@ new class extends Component
             @foreach($departments->take(6) as $d)
                 <x-ui.pill variant="filled" :active="$departmentSlug === $d->slug" :href="route('departments.show', $d->slug)">
                     {{ $d->name }}
-                    <svg class="h-3 w-3" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+                    @svg('lucide-x', 'h-3 w-3')
                 </x-ui.pill>
             @endforeach
             @if($departments->count() > 6)

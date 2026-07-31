@@ -1,15 +1,3 @@
-/* ===========================================================================
- * App entry
- * Imports the design system. Order matters:
- *   1. Tailwind core + animation/font sources
- *   2. Design tokens (raw values)
- *   3. Foundation layer (semantic tokens, theme config, base utilities)
- *   4. Base layer (reset, scrollbar)
- *   5. Components layer
- *   6. Layouts layer
- *   7. Pages layer
- * ======================================================================== */
-
 @import "tailwindcss" source(none);
 @source "../../resources";
 @import "tw-animate-css";
@@ -19,9 +7,58 @@
 @import "@fontsource/public-sans/700.css";
 @import "@fontsource/public-sans/800.css";
 
-@import "./theme/tokens/index.css";
-@import "./foundation/index.css";
-@import "./base/index.css";
-@import "./components/index.css";
-@import "./layouts/index.css";
-@import "./pages/index.css";
+/* ── Theme: design tokens (@theme replaces Tailwind defaults) ── */
+@import "./theme/index.css";
+@import "./themes/dark.css";
+
+/* ── Base layer ── */
+@import "./base/reset.css";
+@import "./base/globals.css";
+@import "./base/typography.css";
+
+/* ── Components ── */
+@import "./components/button.css";
+@import "./components/card.css";
+@import "./components/form.css";
+@import "./components/modal.css";
+
+/* ── Utilities ── */
+@import "./utilities/scrollbar.css";
+@import "./utilities/text.css";
+@import "./utilities/helpers.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@utility container-page {
+  width: 100%;
+  margin-inline: auto;
+  max-width: 80rem;
+  padding-inline: 1rem;
+  @media (min-width: 640px) { padding-inline: 1.5rem; }
+  @media (min-width: 1024px) { padding-inline: 2rem; }
+}
+
+@utility hairline {
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
+@utility section-y {
+  padding-block: 4rem;
+  @media (min-width: 768px) { padding-block: 6rem; }
+}
+
+@utility text-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.5s cubic-bezier(0.3, 0, 0, 1) both; }
+
+[x-cloak] { display: none !important; }

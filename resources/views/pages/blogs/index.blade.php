@@ -1,39 +1,3 @@
-<?php
-
-use Livewire\Component;
-use Livewire\WithPagination;
-use App\Models\BlogPost;
-
-
-new class extends Component
-{
-public string $search = '';
-    public int $perPage = 12;
-
-    public function updatingSearch(): void
-    {
-        $this->resetPage();
-    }
-
-    public function render()
-    {
-        $query = BlogPost::query();
-
-        if ($this->search) {
-            $query->where(function ($q) {
-                $q->where('title', 'like', "%{$this->search}%")
-                  ->orWhere('excerpt', 'like', "%{$this->search}%")
-                  ->orWhere('category', 'like', "%{$this->search}%");
-            });
-        }
-
-        $blogs = $query->latest('published_at')->paginate($this->perPage);
-
-        return $this->view(['blogs' => $blogs]);
-    }
-};
-
-?>
 <div>
     <section class="bg-gradient-to-b from-primary-soft to-background">
         <div class="container-page py-12 md:py-16">

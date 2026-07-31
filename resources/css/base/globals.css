@@ -1,0 +1,5 @@
+@layer base {
+  body { background-color: var(--color-background); color: var(--color-foreground); font-family: var(--font-sans); font-feature-settings: "cv11", "ss01"; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+  ::selection { background: color-mix(in oklch, var(--color-primary) 18%, transparent); }
+  :focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; border-radius: 4px; }
+}

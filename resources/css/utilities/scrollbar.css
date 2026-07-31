@@ -1,0 +1,11 @@
+@layer base {
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: oklch(0.5 0.02 245 / 0.2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: oklch(0.5 0.02 245 / 0.35); }
+  @media (prefers-reduced-motion: no-preference) { ::-webkit-scrollbar-thumb { transition: background 0.15s ease; } }
+  html { scrollbar-width: thin; scrollbar-color: oklch(0.5 0.02 245 / 0.2) transparent; }
+  .dark ::-webkit-scrollbar-thumb { background: oklch(1 0 0 / 0.12); }
+  .dark ::-webkit-scrollbar-thumb:hover { background: oklch(1 0 0 / 0.22); }
+  .dark { scrollbar-color: oklch(1 0 0 / 0.12) transparent; }
+}

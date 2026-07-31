@@ -1,77 +1,3 @@
-<?php
-
-use App\Models\{HeroSlide, QuickAction, Stat, Service, Department, Doctor, HealthPackage, Treatment, Technology, Testimonial, PatientStory, InsurancePartner, Award, BlogPost, Faq, CmsPage, SiteSetting};
-use Livewire\Component;
-
-new class extends Component
-{
-public array $heroSlides = [];
-    public array $quickActions = [];
-    public array $stats = [];
-    public array $services = [];
-    public array $departments = [];
-    public array $doctors = [];
-    public array $packages = [];
-    public array $treatments = [];
-    public array $technologies = [];
-    public array $testimonials = [];
-    public array $stories = [];
-    public array $insurance = [];
-    public array $awards = [];
-    public array $blogs = [];
-    public array $faqs = [];
-    public ?array $aboutPage = null;
-    public ?array $whyChooseUsPage = null;
-    public ?array $careerPage = null;
-    public ?array $settings = null;
-    public ?SiteSetting $siteSetting = null;
-    public array $homeSections = [];
-    public array $aboutContent = [];
-    public array $careerStatsContent = [];
-    public array $heroContent = [];
-
-    public function mount(): void
-    {
-        $this->heroSlides = HeroSlide::orderBy('order')->get()->toArray();
-        $this->quickActions = QuickAction::all()->toArray();
-        $this->stats = Stat::all()->toArray();
-        $this->services = Service::all()->toArray();
-        $this->departments = Department::all()->toArray();
-        $this->doctors = Doctor::take(4)->get()->toArray();
-        $this->packages = HealthPackage::all()->toArray();
-        $this->treatments = Treatment::all()->toArray();
-        $this->technologies = Technology::all()->toArray();
-        $this->testimonials = Testimonial::all()->toArray();
-        $this->stories = PatientStory::all()->toArray();
-        $this->insurance = InsurancePartner::all()->toArray();
-        $this->awards = Award::all()->toArray();
-        $this->blogs = BlogPost::latest()->take(3)->get()->toArray();
-        $this->faqs = Faq::all()->toArray();
-        $this->siteSetting = SiteSetting::first();
-        $this->settings = $this->siteSetting?->toArray();
-        $this->homeSections = $this->siteSetting?->home_sections ?? [];
-        $this->aboutContent = $this->siteSetting?->about ?? [];
-        $this->careerStatsContent = $this->siteSetting?->career_stats ?? [];
-        $this->heroContent = $this->siteSetting?->hero ?? [];
-
-        // Load CMS pages for dynamic homepage sections
-        foreach (['about-us', 'why-choose-us', 'careers'] as $slug) {
-            $page = CmsPage::where('slug', $slug)->first();
-            if ($page) {
-                $this->{$slug === 'about-us' ? 'aboutPage' : ($slug === 'why-choose-us' ? 'whyChooseUsPage' : 'careerPage')} = $page->toArray();
-            }
-        }
-    }
-
-    public function render()
-    {
-        $siteName = $this->settings['site_name'] ?? 'Shubham International';
-        return $this->view()
-            ->layout('layouts.public', ['title' => $siteName . ' — Advanced Medical Care for Every Generation']);
-    }
-};
-
-?>
 <div>
     {{-- ============ 1. HERO ============ --}}
     @if(!empty($heroSlides))
@@ -89,7 +15,7 @@ public array $heroSlides = [];
                     <div class="mt-8 flex flex-wrap gap-3">
                         <a href="{{ $slide['cta_url'] }}" class="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-card hover:opacity-90 transition-opacity">
                             {{ $slide['cta_label'] }}
-                            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                            @svg('lucide-arrow-right', 'h-4 w-4')
                         </a>
                         @if($slide['secondary_cta_label'] ?? false)
                             <a href="{{ $slide['secondary_cta_url'] ?? '/' }}" class="inline-flex items-center rounded-md bg-surface px-6 py-3.5 text-sm font-semibold text-foreground hairline hover:bg-muted transition-colors">
@@ -168,14 +94,14 @@ public array $heroSlides = [];
                         <ul class="mt-6 space-y-3">
                             @foreach($aboutPoints as $point)
                                 <li class="flex items-start gap-3 text-sm">
-                                    <svg class="h-4 w-4 text-secondary mt-0.5 shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                                    @svg('lucide-chevron-right', 'h-4 w-4 text-secondary mt-0.5 shrink-0')
                                     <span>{{ $point }}</span>
                                 </li>
                             @endforeach
                         </ul>
                     @endif
                     <a href="/pages/about-us" wire:navigate class="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:gap-3 transition-all">
-                        {{ $aboutContent['learn_more_label'] ?? 'Learn more about us' }} <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        {{ $aboutContent['learn_more_label'] ?? 'Learn more about us' }} @svg('lucide-arrow-right', 'h-4 w-4')
                     </a>
                 </div>
             </div>
@@ -385,12 +311,12 @@ public array $heroSlides = [];
                 <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
                     @foreach($testimonials as $testimonial)
                         <figure class="rounded-2xl bg-white/5 hairline border-white/10 p-6 flex flex-col">
-                            <svg class="h-6 w-6 text-secondary mb-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+                            @svg('lucide-quote', 'h-6 w-6 text-secondary mb-4')
                             <blockquote class="text-sm leading-relaxed flex-1">"{{ $testimonial['quote'] }}"</blockquote>
                             @if($testimonial['rating'])
                                 <div class="mt-5 flex items-center gap-1 text-secondary">
                                     @for($i = 0; $i < min(5, $testimonial['rating']); $i++)
-                                        <svg class="h-3.5 w-3.5 fill-current" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                        @svg('lucide-star', 'h-3.5 w-3.5 fill-current')
                                     @endfor
                                 </div>
                             @endif
@@ -515,7 +441,7 @@ public array $heroSlides = [];
                         <div class="mt-4 text-primary-foreground/70 max-w-lg leading-relaxed [&>p]:mt-2 first:[&>p]:mt-0">{!! $careerHtml !!}</div>
                     @endif
                     <a href="/pages/careers" class="mt-6 inline-flex items-center gap-2 rounded-md bg-surface px-6 py-3 text-sm font-semibold text-foreground hover:bg-secondary hover:text-secondary-foreground transition-colors">
-                        {{ $careerStatsContent['openings_label'] ?? 'Explore openings' }} <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        {{ $careerStatsContent['openings_label'] ?? 'Explore openings' }} @svg('lucide-arrow-right', 'h-4 w-4')
                     </a>
                 </div>
                 @if(!empty($careerStatsList))
@@ -548,10 +474,10 @@ public array $heroSlides = [];
                             <button type="button" class="w-full flex items-center justify-between gap-4 py-4 text-left" @click="open = open === {{ $faq['id'] }} ? null : {{ $faq['id'] }}" :aria-expanded="open === {{ $faq['id'] }}">
                                 <span class="font-semibold pr-4">{{ $faq['question'] }}</span>
                                 <template x-if="open === {{ $faq['id'] }}">
-                                    <svg class="h-5 w-5 shrink-0 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/></svg>
+                                    @svg('lucide-minus', 'h-5 w-5 shrink-0 text-primary')
                                 </template>
                                 <template x-if="open !== {{ $faq['id'] }}">
-                                    <svg class="h-5 w-5 shrink-0 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                                    @svg('lucide-plus', 'h-5 w-5 shrink-0 text-muted-foreground')
                                 </template>
                             </button>
                             <div x-show="open === {{ $faq['id'] }}" x-collapse>
@@ -573,7 +499,7 @@ public array $heroSlides = [];
             </p>
             <div class="mt-7 flex flex-wrap justify-center gap-3">
                 <a href="{{ route('appointment') }}" wire:navigate class="inline-flex items-center gap-2 rounded-md bg-surface px-6 py-3 text-sm font-semibold text-foreground hover:bg-background transition-colors">
-                    {{ $homeSections['contact_cta_book_label'] ?? 'Book Appointment' }} <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    {{ $homeSections['contact_cta_book_label'] ?? 'Book Appointment' }} @svg('lucide-arrow-right', 'h-4 w-4')
                 </a>
                 <a href="{{ route('contact') }}" wire:navigate class="inline-flex items-center rounded-md bg-white/10 border border-white/20 px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-white/20 transition-colors">
                     {{ $homeSections['contact_cta_contact_label'] ?? 'Contact us' }}
