@@ -1,16 +1,18 @@
 # Shubham International Hospital — Laravel + Livewire (Vercel Deployment)
 
-> **Live now:** https://livewire-app-gamma.vercel.app &nbsp;·&nbsp; **Custom domain:** `v2.sih.com.np` (pending one Cloudflare DNS record — see §6)
+> **Live now:** **https://v1.sih.com.np** &nbsp;·&nbsp; backup alias: https://livewire-app-gamma.vercel.app
+> (see §6 for the domain mapping)
 
 This is a **Laravel 13 + Livewire 4** hospital website (public site + admin panel) deployed to
 **Vercel serverless functions** using the community `vercel-php` runtime. This README documents
 **everything that was done** so the exact setup can be replicated on another project.
 
-> 📚 **Companion docs:** [**DOMAIN-MAP.md**](DOMAIN-MAP.md) — full mapping of the custom domain
-> `v2.sih.com.np` → Vercel (what's done, the one Cloudflare record you add). &nbsp;·&nbsp;
-> [**DATABASE-SETUP.md**](DATABASE-SETUP.md) — connect a Postgres database to make the site fully
-> writable (fixes the read-only SQLite limitation in §7). &nbsp;·&nbsp; The alternative InfinityFree
-> hosting path is in [**DEPLOYMENT.md**](DEPLOYMENT.md).
+> 📚 **Companion docs:** [**ADDING-CUSTOM-DOMAIN.md**](ADDING-CUSTOM-DOMAIN.md) — the *how-to*
+> playbook for binding a custom domain (exact commands used). &nbsp;·&nbsp;
+> [**DOMAIN-MAP.md**](DOMAIN-MAP.md) — the *current state* of the `v1.sih.com.np` mapping.
+> &nbsp;·&nbsp; [**DATABASE-SETUP.md**](DATABASE-SETUP.md) — connect a Postgres database to make the
+> site fully writable (fixes the read-only SQLite limitation in §7). &nbsp;·&nbsp; The alternative
+> InfinityFree hosting path is in [**DEPLOYMENT.md**](DEPLOYMENT.md).
 
 ---
 
@@ -21,7 +23,7 @@ This is a **Laravel 13 + Livewire 4** hospital website (public site + admin pane
 3. [The deployment files](#3-the-deployment-files)
 4. [Production environment variables](#4-production-environment-variables)
 5. [Deploying (step by step)](#5-deploying-step-by-step)
-6. [Custom domain (v2.sih.com.np)](#6-custom-domain-v2sihcomnp)
+6. [Custom domain (v1.sih.com.np)](#6-custom-domain-v1sihcomnp)
 7. [Known limitations on Vercel](#7-known-limitations-on-vercel)
 8. [Troubleshooting](#8-troubleshooting)
 9. [Replicating on another project](#9-replicating-on-another-project)
@@ -243,7 +245,7 @@ Set on Vercel → project **livewire-app** → **Settings → Environment Variab
 | `APP_KEY` | (from local `.env`, a `base64:...` value) | Laravel encryption key — must match local so existing content works. |
 | `APP_ENV` | `production` | Production mode. |
 | `APP_DEBUG` | `false` | Hide stack traces. |
-| `APP_URL` | `https://v2.sih.com.np` | Canonical URL for absolute-URL generation. |
+| `APP_URL` | `https://v1.sih.com.np` | Canonical URL for absolute-URL generation. |
 | `SESSION_DRIVER` | `cookie` | Serverless-safe sessions (persist in the browser). |
 | `CACHE_STORE` | `array` | No persistent cache needed. |
 | `QUEUE_CONNECTION` | `sync` | Jobs run inline. |
@@ -256,7 +258,7 @@ CLI equivalent (from the project folder, after `vercel login` / `vercel link`):
 echo "base64:...your-key..." | vercel env add APP_KEY production
 echo "production"             | vercel env add APP_ENV production
 echo "false"                  | vercel env add APP_DEBUG production
-echo "https://v2.sih.com.np"  | vercel env add APP_URL production
+echo "https://v1.sih.com.np"  | vercel env add APP_URL production
 echo "cookie"                 | vercel env add SESSION_DRIVER production
 echo "array"                  | vercel env add CACHE_STORE production
 echo "sync"                   | vercel env add QUEUE_CONNECTION production
@@ -322,41 +324,49 @@ curl -s -X PATCH \
 
 ---
 
-## 6. Custom domain (v2.sih.com.np)
+## 6. Custom domain (v1.sih.com.np)
 
-`v1.sih.com.np` is already bound to the **laravel-vercel** API project, so this site uses
-**`v2.sih.com.np`** (both are subdomains of `sih.com.np`, whose DNS is on **Cloudflare**).
+**`v1.sih.com.np`** (DNS on **Cloudflare**) is the primary domain of this site. It was originally
+bound to the **laravel-vercel** API project; on 2026-07-31 it was **moved** to this project (the
+API still runs at `https://laravel-vercel-pink.vercel.app`). Because the Cloudflare CNAME for `v1`
+already existed, the site went live at `https://v1.sih.com.np` immediately after the redeploy.
 
 ### Vercel side (done — via the API)
 
+A domain can only be attached to one project, so it must first be removed from the old project:
+
 ```bash
+# 1. Detach from the old project (laravel-vercel)
+curl -s -X DELETE \
+  -H "Authorization: Bearer $TOKEN" \
+  "https://api.vercel.com/v10/projects/<OLD_PROJECT_ID>/domains/v1.sih.com.np?teamId=<TEAM_ID>"
+
+# 2. Attach to this project (livewire-app)
 curl -s -X POST \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"name":"v2.sih.com.np"}' \
+  -d '{"name":"v1.sih.com.np"}' \
   "https://api.vercel.com/v10/projects/<PROJECT_ID>/domains?teamId=<TEAM_ID>"
 ```
 
-Response showed `"verified": true` — the domain is attached to the project. Then:
-`APP_URL=https://v2.sih.com.np` was added and the project redeployed; the deploy output aliased
-`v2.sih.com.np` and Vercel began creating the SSL certificate asynchronously.
+Response showed `"verified": true`. Then `APP_URL=https://v1.sih.com.np` was set and the project
+redeployed; the deploy output aliased `v1.sih.com.np`. (Dashboard alternative:
+**Project → Settings → Domains → Add** — again, detach from the old project first.)
 
-Dashboard alternative: **Project → Settings → Domains → Add**.
+### Cloudflare side (already in place ✅)
 
-### Cloudflare side (one record — your step)
-
-In Cloudflare, zone `sih.com.np` → **DNS → Records → Add record**:
+The CNAME for `v1` was added when the API project was deployed, so **no Cloudflare change is
+needed**. For reference, the record is:
 
 | Field | Value |
 |---|---|
 | **Type** | `CNAME` |
-| **Name** | `v2` |
+| **Name** | `v1` |
 | **Target** | `cname.vercel-dns.com` |
 | **Proxy status** | ⚪ **DNS only** (grey cloud — NOT orange/proxied) |
 | **TTL** | `Auto` |
 
 **Why "DNS only":** if the record is proxied (orange cloud), Cloudflare hides the CNAME behind
-its own IPs and Vercel's certificate validation can fail. Once the record propagates, Vercel
-finishes the SSL cert automatically and `https://v2.sih.com.np` serves the site.
+its own IPs and Vercel's certificate validation can fail.
 
 > Apex note: `sih.com.np` itself would need an **A record → `76.76.21.21`** instead of a CNAME.
 

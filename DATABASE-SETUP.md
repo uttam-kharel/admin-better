@@ -4,7 +4,7 @@ A step-by-step guide to connect a **managed Postgres database** to the Shubham I
 site (Laravel 13 + Livewire 4) deployed on Vercel — including migrations, environment variables, and
 live verification. Use this to replicate the setup on any project.
 
-> Current project reference: database for `https://v2.sih.com.np` / `https://livewire-app-gamma.vercel.app`
+> Current project reference: database for `https://v1.sih.com.np` / `https://livewire-app-gamma.vercel.app`
 > (project `livewire-app`).
 > After this guide you'll have: a Postgres database, `DB_CONNECTION` + `DB_URL` env vars on Vercel,
 > the schema migrated, and **writable** admin CRUD / appointments / contact forms over HTTPS.
@@ -180,11 +180,11 @@ Then verify writes work against the live site:
 
 ```bash
 # Health + public pages still fine
-curl -s https://v2.sih.com.np/up
+curl -s https://v1.sih.com.np/up
 
 # A write-bearing page loads (contact/appointment forms, admin login page)
-curl -s -o /dev/null -w "%{http_code}\n" https://v2.sih.com.np/contact      # 200
-curl -s -o /dev/null -w "%{http_code}\n" https://v2.sih.com.np/admin/login  # 200
+curl -s -o /dev/null -w "%{http_code}\n" https://v1.sih.com.np/contact      # 200
+curl -s -o /dev/null -w "%{http_code}\n" https://v1.sih.com.np/admin/login  # 200
 ```
 
 > ⚠️ **Don't test writes with a plain `curl -X POST` to `/contact`.** The contact & appointment
