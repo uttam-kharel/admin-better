@@ -11,6 +11,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust Vercel's edge proxy so Laravel sees the original https scheme
+        // (X-Forwarded-Proto) and generates https:// asset/route URLs instead
+        // of http:// ones (otherwise browsers block assets as mixed content).
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
         ]);
