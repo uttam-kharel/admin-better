@@ -44,6 +44,8 @@ Everything is **switch-ready**: the app detects each service's env var and start
 2. Name: `DATABASE_URL` — value: your Neon connection string (copy it from Vercel → Storage → your Neon DB → Connect).
 3. Next push to `main` will run `php artisan migrate --force` against Neon before deploying.
 
+> If you later add migrations that use encryption, also add an `APP_KEY` repository secret (the CI step copies `.env.example`, whose `APP_KEY` is empty).
+
 **Option B — one-off from your machine:**
 ```bash
 DATABASE_URL="postgresql://..." DB_CONNECTION=pgsql php artisan migrate --force
