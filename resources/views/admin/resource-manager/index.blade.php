@@ -142,7 +142,10 @@ public string $resource;
         $this->resetPage();
     }
 
-    public function view(string|int $id): void
+    // NOTE: named showDetails, not view() — Livewire auto-generates a view()
+    // helper for anonymous Blade components, so a user-defined view() here
+    // caused a PHP fatal 'Cannot redeclare' and 500s on every admin page.
+    public function showDetails(string|int $id): void
     {
         $this->viewItem = $this->query()->findOrFail($id);
         $this->showViewModal = true;
@@ -766,7 +769,7 @@ public string $resource;
                             @endforeach
                             <td class="px-4 py-3 text-right whitespace-nowrap">
                                 @if($viewable)
-                                    <button wire:click="view(@js($item->getKey()))" class="p-1.5 rounded hover:bg-muted text-foreground/70 hover:text-foreground" aria-label="View details">
+                                    <button wire:click="showDetails(@js($item->getKey()))" class="p-1.5 rounded hover:bg-muted text-foreground/70 hover:text-foreground" aria-label="View details">
                                         @svg('lucide-eye', 'h-4 w-4')
                                     </button>
                                 @endif
