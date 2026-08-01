@@ -225,8 +225,4 @@ public function render()
         </template>
     </template>
 
-    {{-- Reading progress bar --}}
-    <div class="scroll-progress-track absolute inset-x-0 bottom-0 h-0.5 overflow-hidden pointer-events-none" aria-hidden="true">
-        <div class="scroll-progress h-full w-full origin-left bg-gradient-to-r from-primary to-secondary" style="transform: scaleX(0)"></div>
-    </div>
 </header>

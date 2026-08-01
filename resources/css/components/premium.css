@@ -159,8 +159,11 @@ html.js .reveal.in { opacity: 1; transform: none; }
   .mobile-nav-link.is-active::before { left: -1.5rem; }
 }
 
-/* ---- Reading progress bar ---- */
-.scroll-progress { will-change: transform; }
+/* ---- Go-to-top button ---- */
+.to-top-btn {
+  box-shadow: 0 10px 26px -8px rgb(15 108 189 / 0.45);
+}
+.to-top-btn:active { transform: scale(0.96); }
 
 /* ---- Reduced motion ---- */
 @media (prefers-reduced-motion: reduce) {
