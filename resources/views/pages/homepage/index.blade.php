@@ -2,18 +2,19 @@
     {{-- ============ 1. HERO ============ --}}
     @if(!empty($heroSlides))
         @php $slide = $heroSlides[0]; @endphp
-        <section class="relative bg-gradient-to-b from-primary-soft to-background overflow-hidden">
-            <div class="container-page pt-10 pb-16 md:pt-16 md:pb-24 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <section class="relative bg-gradient-to-b from-primary-soft via-background to-background overflow-hidden">
+            <div class="absolute inset-0 hero-pattern pointer-events-none" aria-hidden="true"></div>
+            <div class="container-page relative pt-12 pb-16 md:pt-20 md:pb-24 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
                 <div class="min-w-0">
-                    <p class="text-eyebrow mb-4">{{ $slide['eyebrow'] }}</p>
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05] text-balance">
+                    <p class="text-eyebrow mb-4 reveal">{{ $slide['eyebrow'] }}</p>
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05] text-balance reveal reveal-d1">
                         {{ $slide['title'] }}
                     </h1>
-                    <p class="mt-5 text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed text-pretty">
+                    <p class="mt-5 text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed text-pretty reveal reveal-d2">
                         {{ $slide['subtitle'] }}
                     </p>
-                    <div class="mt-8 flex flex-wrap gap-3">
-                        <a href="{{ $slide['cta_url'] }}" class="inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-card hover:opacity-90 transition-opacity">
+                    <div class="mt-8 flex flex-wrap gap-3 reveal reveal-d3">
+                        <a href="{{ $slide['cta_url'] }}" class="btn-lift inline-flex items-center gap-2 rounded-md bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-card hover:bg-primary/90">
                             {{ $slide['cta_label'] }}
                             @svg('lucide-arrow-right', 'h-4 w-4')
                         </a>
@@ -23,13 +24,40 @@
                             </a>
                         @endif
                     </div>
-                </div>
-                <div class="relative">
-                    <div class="aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5] rounded-3xl overflow-hidden hairline">                            <img src="{{ $slide['image'] }}" alt="" class="size-full object-cover" loading="eager" fetchPriority="high" />
+                    <div class="mt-8 flex items-center gap-4 reveal reveal-d4">
+                        <div class="flex -space-x-2" aria-hidden="true">
+                            @foreach(array_slice($testimonials, 0, 4) as $t)
+                                <span class="size-9 rounded-full border-2 border-background bg-primary-soft text-primary grid place-items-center text-[10px] font-bold">{{ strtoupper(substr($t['name'] ?? 'P', 0, 1)) }}</span>
+                            @endforeach
+                        </div>
+                        <div class="text-sm">
+                            <div class="flex items-center gap-0.5 text-amber-500" aria-label="Rated 4.9 out of 5">@for($i = 0; $i < 5; $i++) @svg('lucide-star', 'h-3.5 w-3.5 fill-current') @endfor</div>
+                            <p class="text-muted-foreground mt-0.5"><strong class="text-foreground">4.9/5</strong> from 2,400+ patients</p>
+                        </div>
                     </div>
+                </div>
+                <div class="relative reveal reveal-d2">
+                    <div class="aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5] rounded-3xl overflow-hidden hairline shadow-elevated">
+                        <img src="{{ $slide['image'] }}" alt="{{ $slide['title'] }}" class="size-full object-cover" loading="eager" fetchPriority="high" />
+                    </div>
+
+                    {{-- Floating info cards --}}
+                    <div class="float-card top-6 -left-3 sm:-left-6">
+                        <span class="fc-ico bg-primary-soft text-primary" aria-hidden="true">@svg('lucide-stethoscope', 'h-5 w-5')</span>
+                        <span><strong>50+ Specialist</strong><small>Doctors</small></span>
+                    </div>
+                    <div class="float-card right-4 sm:-right-6 top-1/3">
+                        <span class="fc-ico bg-emergency-soft text-emergency" aria-hidden="true">@svg('lucide-siren', 'h-5 w-5')</span>
+                        <span><strong>24/7</strong><small>Emergency</small></span>
+                    </div>
+                    <div class="float-card bottom-8 -left-3 sm:-left-8 hidden sm:flex">
+                        <span class="fc-ico bg-secondary-soft text-secondary" aria-hidden="true">@svg('lucide-hospital', 'h-5 w-5')</span>
+                        <span><strong>20 Years</strong><small>of Trusted Care</small></span>
+                    </div>
+
                     @if($heroContent)
                         <div class="absolute -bottom-5 -left-5 hidden sm:flex bg-surface rounded-xl shadow-elevated hairline p-5 max-w-xs items-center gap-3">
-                            <div class="size-2.5 rounded-full bg-secondary animate-pulse" aria-hidden="true"></div>
+                            <span class="size-2.5 rounded-full bg-secondary animate-pulse" aria-hidden="true"></span>
                             <div>
                                 <p class="text-xs font-semibold tracking-widest uppercase text-muted-foreground">{{ $heroContent['status_label'] ?? 'ER status' }}</p>
                                 <p class="text-sm font-medium">{{ $heroContent['wait_label'] ?? 'Avg wait:' }} <span class="text-secondary">{{ $heroContent['wait_value'] ?? '8 min' }}</span></p>
@@ -45,9 +73,9 @@
     @if(!empty($quickActions))
         @php $tones = ['emergency' => 'bg-emergency-soft text-emergency', 'primary' => 'bg-primary-soft text-primary', 'secondary' => 'bg-secondary-soft text-secondary', 'neutral' => 'bg-muted text-foreground'] @endphp
         <section class="container-page -mt-10 md:-mt-12 relative z-10">
-            <div class="bg-surface rounded-2xl shadow-elevated hairline grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-border overflow-hidden">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                 @foreach($quickActions as $action)
-                    <a href="{{ $action['url'] }}" class="p-5 md:p-6 flex items-center gap-4 hover:bg-muted transition-colors group min-w-0">
+                    <a href="{{ $action['url'] }}" class="card-lift rounded-2xl bg-surface hairline shadow-xs p-5 md:p-6 flex items-center gap-4 hover:shadow-elevated group min-w-0">
                         <div class="size-11 rounded-full grid place-items-center shrink-0 {{ $tones[$action['tone']] ?? $tones['neutral'] }}">
                             @svg('lucide-' . ($lucideMap[$action['icon']] ?? $action['icon']), 'h-5 w-5')
                         </div>
@@ -110,12 +138,23 @@
 
     {{-- ============ 4. STATISTICS ============ --}}
     @if(!empty($stats))
-        <section class="bg-primary text-primary-foreground">
-            <div class="container-page py-14 md:py-16 grid grid-cols-2 lg:grid-cols-4 gap-8">
+        <section class="bg-foreground text-background relative overflow-hidden">
+            <div class="absolute inset-0 pointer-events-none" aria-hidden="true" style="background-image: radial-gradient(rgba(255,255,255,0.08) 1.5px, transparent 1.5px); background-size: 32px 32px;"></div>
+            <div class="container-page relative py-14 md:py-16 grid grid-cols-2 lg:grid-cols-4 gap-10">
                 @foreach($stats as $stat)
-                    <div class="text-center md:text-left">
-                        <p class="text-4xl md:text-5xl font-bold tracking-tight">{{ $stat['value'] }}</p>
-                        <p class="mt-2 text-xs md:text-sm uppercase tracking-widest text-primary-foreground/70">{{ $stat['label'] }}</p>
+                    @php
+                        $countable = preg_match('/^([\d,]+)\s*(.*)$/', trim($stat['value'] ?? ''), $m) === 1;
+                        $num = $countable ? (int) str_replace(',', '', $m[1]) : 0;
+                        $suffix = $countable ? ($m[2] ?? '') : '';
+                    @endphp
+                    <div class="text-center">
+                        <span class="mx-auto mb-4 block size-1.5 rounded-full bg-secondary" aria-hidden="true"></span>
+                        @if($countable)
+                            <p class="stat-num text-4xl md:text-5xl font-bold tracking-tight" data-count data-target="{{ $num }}" data-suffix="{{ $suffix }}">0{{ $suffix }}</p>
+                        @else
+                            <p class="stat-num text-4xl md:text-5xl font-bold tracking-tight">{{ $stat['value'] }}</p>
+                        @endif
+                        <p class="mt-2 text-xs md:text-sm uppercase tracking-widest text-background/60">{{ $stat['label'] }}</p>
                     </div>
                 @endforeach
             </div>
@@ -134,12 +173,13 @@
             />
             <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 @foreach($services as $service)
-                    <a href="{{ route('services.show', $service['slug']) }}" wire:navigate class="group rounded-2xl bg-surface hairline p-6 hover:shadow-card hover:-translate-y-0.5 transition-all">
-                        <div class="size-11 rounded-xl bg-primary-soft text-primary grid place-items-center mb-5">
+                    <a href="{{ route('services.show', $service['slug']) }}" wire:navigate class="card-lift group rounded-2xl bg-surface hairline p-6 hover:shadow-elevated">
+                        <div class="icon-flip size-12 rounded-xl bg-primary-soft text-primary grid place-items-center mb-5 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                             @svg('lucide-' . ($lucideMap[$service['icon'] ?? ''] ?? $service['icon'] ?? 'stethoscope'), 'h-5 w-5')
                         </div>
                         <h3 class="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">{{ $service['name'] }}</h3>
                         <p class="text-sm text-muted-foreground leading-relaxed">{{ $service['summary'] }}</p>
+                        <span class="arrow-nudge mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">Learn More @svg('lucide-arrow-right', 'h-4 w-4')</span>
                     </a>
                 @endforeach
             </div>
@@ -288,8 +328,8 @@
             <x-ui.section-header eyebrow="{{ $homeSections['why_choose_eyebrow'] ?? 'Why Shubham International' }}" title="{{ $homeSections['why_choose_title'] ?? 'The difference is in the details' }}" align="center" />
             <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-border rounded-2xl overflow-hidden hairline">
                 @foreach($features as $idx => $item)
-                    <div class="bg-surface p-8">
-                        <p class="text-secondary font-bold text-2xl mb-3">0{{ $idx + 1 }}</p>
+                    <div class="bg-surface p-8 transition-colors hover:bg-primary-soft/40">
+                        <div class="size-10 rounded-xl bg-success-soft text-success grid place-items-center mb-4" aria-hidden="true">@svg('lucide-check', 'h-5 w-5')</div>
                         <h3 class="font-semibold mb-2">{{ $item['title'] }}</h3>
                         <p class="text-sm text-muted-foreground leading-relaxed">{{ $item['body'] }}</p>
                     </div>
@@ -300,21 +340,20 @@
 
     {{-- ============ 12. TESTIMONIALS ============ --}}
     @if(!empty($testimonials))
-        <section class="bg-primary text-primary-foreground section-y">
+        <section class="bg-surface-muted section-y">
             <div class="container-page">
                 <x-ui.section-header
                     eyebrow="{{ $homeSections['testimonials_eyebrow'] ?? 'Patient Voices' }}"
                     title="{{ $homeSections['testimonials_title'] ?? 'Heard in their own words' }}"
                     align="center"
-                    class="[&_.text-eyebrow]:text-secondary [&_h2]:text-primary-foreground [&_p]:text-primary-foreground/70"
                 />
                 <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
                     @foreach($testimonials as $testimonial)
-                        <figure class="rounded-2xl bg-white/5 hairline border-white/10 p-6 flex flex-col">
+                        <figure class="card-lift rounded-2xl bg-surface hairline shadow-xs p-6 flex flex-col hover:shadow-elevated">
                             @svg('lucide-quote', 'h-6 w-6 text-secondary mb-4')
                             <blockquote class="text-sm leading-relaxed flex-1">"{{ $testimonial['quote'] }}"</blockquote>
                             @if($testimonial['rating'])
-                                <div class="mt-5 flex items-center gap-1 text-secondary">
+                                <div class="mt-5 flex items-center gap-1 text-amber-500">
                                     @for($i = 0; $i < min(5, $testimonial['rating']); $i++)
                                         @svg('lucide-star', 'h-3.5 w-3.5 fill-current')
                                     @endfor
@@ -322,7 +361,7 @@
                             @endif
                             <figcaption class="mt-3 text-sm">
                                 <p class="font-semibold">{{ $testimonial['name'] }}</p>
-                                <p class="text-xs text-primary-foreground/60">{{ $testimonial['location'] }} &middot; {{ $testimonial['treatment'] }}</p>
+                                <p class="text-xs text-muted-foreground">{{ $testimonial['location'] }} &middot; {{ $testimonial['treatment'] }}</p>
                             </figcaption>
                         </figure>
                     @endforeach
@@ -492,18 +531,30 @@
 
     {{-- ============ 19. CONTACT CTA ============ --}}
     <section class="container-page pb-20">
-        <div class="rounded-3xl bg-gradient-to-br from-secondary to-primary text-primary-foreground p-8 md:p-12 text-center">
-            <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-balance">{{ $homeSections['contact_cta_title'] ?? 'Ready to plan your visit?' }}</h2>
-            <p class="mt-3 text-primary-foreground/80 max-w-xl mx-auto">
-                {{ $homeSections['contact_cta_subtitle'] ?? 'Speak with a patient liaison at' }} <strong>{{ $settings['emergency_phone'] ?? '1-800-123-4567' }}</strong> {{ $homeSections['contact_cta_middle'] ?? 'or book an appointment online in under two minutes.' }}
-            </p>
-            <div class="mt-7 flex flex-wrap justify-center gap-3">
-                <a href="{{ route('appointment') }}" wire:navigate class="inline-flex items-center gap-2 rounded-md bg-surface px-6 py-3 text-sm font-semibold text-foreground hover:bg-background transition-colors">
-                    {{ $homeSections['contact_cta_book_label'] ?? 'Book Appointment' }} @svg('lucide-arrow-right', 'h-4 w-4')
-                </a>
-                <a href="{{ route('contact') }}" wire:navigate class="inline-flex items-center rounded-md bg-white/10 border border-white/20 px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-white/20 transition-colors">
-                    {{ $homeSections['contact_cta_contact_label'] ?? 'Contact us' }}
-                </a>
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0E62B4] via-primary to-[#1890DB] text-primary-foreground p-8 md:p-14 shadow-elevated">
+            <div class="absolute inset-0 pointer-events-none" aria-hidden="true" style="background-image: radial-gradient(rgba(255,255,255,0.12) 1.5px, transparent 1.5px); background-size: 30px 30px;"></div>
+            <div class="relative grid lg:grid-cols-2 gap-8 items-center">
+                <div class="text-center lg:text-left">
+                    <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-balance">Need Medical Assistance Today?</h2>
+                    <p class="mt-3 text-primary-foreground/85 max-w-xl leading-relaxed">
+                        Our care coordinators will match you with the right specialist and confirm your appointment within minutes.
+                    </p>
+                    <a href="tel:{{ $settings['emergency_phone'] ?? '18001234567' }}" class="mt-6 inline-flex items-center gap-3 rounded-full bg-white/15 px-5 py-2.5 font-semibold hover:bg-white/25 transition-colors">
+                        <span class="cta-ring size-9 rounded-full bg-white/20 grid place-items-center" aria-hidden="true">@svg('lucide-phone', 'h-4 w-4')</span>
+                        {{ $settings['emergency_phone'] ?? '+977-1-4234567' }}
+                    </a>
+                </div>
+                <div class="flex flex-col items-center lg:items-end gap-4">
+                    <a href="{{ route('appointment') }}" wire:navigate class="btn-lift inline-flex items-center gap-2 rounded-md bg-surface px-7 py-3.5 text-sm font-semibold text-foreground shadow-lg hover:bg-background">
+                        {{ $homeSections['contact_cta_book_label'] ?? 'Book an Appointment Now' }} @svg('lucide-arrow-right', 'h-4 w-4')
+                    </a>
+                    <span class="inline-flex items-center gap-2 text-xs text-primary-foreground/80">
+                        <span class="emg-pulse" aria-hidden="true"></span> We usually reply within 5 minutes
+                    </span>
+                    <a href="{{ route('contact') }}" wire:navigate class="text-sm font-semibold text-primary-foreground/90 underline underline-offset-2 hover:text-white transition-colors">
+                        {{ $homeSections['contact_cta_contact_label'] ?? 'Contact us' }}
+                    </a>
+                </div>
             </div>
         </div>
     </section>

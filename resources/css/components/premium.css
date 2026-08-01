@@ -1,0 +1,130 @@
+/* ═══════════════════════════════════════════════════════════
+   MediCare Hospital — Premium Components
+   Scroll reveals · animated counters · floating cards ·
+   hero pattern · emergency pulse · card/button lifts
+   ═══════════════════════════════════════════════════════════ */
+
+/* ---- Scroll reveal (only hidden when JS is active) ---- */
+html.js .reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.5s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: opacity, transform;
+}
+html.js .reveal.in { opacity: 1; transform: none; }
+.reveal-d1 { transition-delay: 0.06s; }
+.reveal-d2 { transition-delay: 0.12s; }
+.reveal-d3 { transition-delay: 0.18s; }
+.reveal-d4 { transition-delay: 0.24s; }
+.reveal-d5 { transition-delay: 0.3s; }
+
+/* ---- Animated counters ---- */
+.stat-num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* ---- Button lift (scale 1.02 + shadow growth) ---- */
+.btn-lift {
+  transition: transform 0.26s cubic-bezier(0.22, 0.61, 0.36, 1),
+              box-shadow 0.26s cubic-bezier(0.22, 0.61, 0.36, 1),
+              background-color 0.2s ease, opacity 0.2s ease;
+  will-change: transform;
+}
+.btn-lift:hover { transform: scale(1.02); }
+.btn-lift:active { transform: scale(0.98); }
+
+/* ---- Card hover lift (translateY -4px) ---- */
+.card-lift {
+  transition: transform 0.26s cubic-bezier(0.22, 0.61, 0.36, 1),
+              box-shadow 0.26s cubic-bezier(0.22, 0.61, 0.36, 1),
+              background-color 0.2s ease, border-color 0.2s ease;
+  will-change: transform;
+}
+.card-lift:hover { transform: translateY(-4px); }
+
+/* ---- Hero soft dot pattern ---- */
+.hero-pattern {
+  background-image: radial-gradient(rgba(15, 108, 189, 0.09) 1.5px, transparent 1.5px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 70%);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 70%);
+}
+
+/* ---- Floating hero info cards ---- */
+.float-card {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  padding: 0.7rem 0.95rem;
+  border-radius: 0.875rem;
+  box-shadow: 0 12px 28px -6px rgb(15 23 42 / 0.14), 0 4px 10px -4px rgb(15 23 42 / 0.08);
+  animation: floaty 6s ease-in-out infinite;
+}
+.float-card .fc-ico {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.float-card strong { display: block; font-size: 0.95rem; color: #0F172A; line-height: 1.15; }
+.float-card small { font-size: 0.75rem; color: #475569; font-weight: 500; }
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+
+/* ---- Emergency bar pulse dot ---- */
+.emg-pulse {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fff;
+  flex: none;
+  animation: emg-pulse 1.8s infinite;
+}
+@keyframes emg-pulse {
+  0% { box-shadow: 0 0 0 0 rgb(255 255 255 / 0.55); }
+  70% { box-shadow: 0 0 0 9px rgb(255 255 255 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(255 255 255 / 0); }
+}
+
+/* ---- CTA phone ring ---- */
+.cta-ring {
+  animation: cta-ring 2.2s infinite;
+}
+@keyframes cta-ring {
+  0% { box-shadow: 0 0 0 0 rgb(255 255 255 / 0.4); }
+  70% { box-shadow: 0 0 0 12px rgb(255 255 255 / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(255 255 255 / 0); }
+}
+
+/* ---- Icon chip color flip (service cards) ---- */
+.icon-flip svg { transition: transform 0.26s cubic-bezier(0.22, 0.61, 0.36, 1); }
+.card-lift:hover .icon-flip svg { transform: translateY(-3px); }
+
+/* ---- Arrow nudge ---- */
+.arrow-nudge svg { transition: transform 0.26s cubic-bezier(0.22, 0.61, 0.36, 1); }
+.group:hover .arrow-nudge svg, .card-lift:hover .arrow-nudge svg { transform: translateX(4px); }
+
+/* ---- Header scrolled state ---- */
+.site-header.scrolled {
+  background-color: color-mix(in oklch, var(--color-background) 92%, transparent);
+  box-shadow: 0 1px 3px 0 rgb(15 23 42 / 0.06), 0 4px 16px rgb(15 23 42 / 0.06);
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  html.js .reveal { opacity: 1; transform: none; }
+  .float-card, .emg-pulse, .cta-ring { animation: none; }
+  .card-lift, .btn-lift { transition-duration: 0.01ms; }
+}

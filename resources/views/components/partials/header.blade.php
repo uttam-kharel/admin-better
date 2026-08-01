@@ -52,7 +52,7 @@ public function render()
         }
     }"
     x-cloak
-    class="sticky top-0 z-40 bg-background/90 backdrop-blur-md border-b border-border"
+    class="site-header sticky top-10 z-40 bg-background/85 backdrop-blur-md border-b border-border transition-[box-shadow,background-color] duration-300"
 >
     <div class="container-page flex h-16 lg:h-20 items-center justify-between gap-4">
         <a href="/" wire:navigate class="flex items-center gap-2 shrink-0" aria-label="{{ ($header['logo_text'] ?? 'Shubham International') }} home">
@@ -110,10 +110,19 @@ public function render()
         </nav>
 
         <div class="flex items-center gap-2">
+            <a href="tel:{{ $settings?->primary_phone ?? '18001234567' }}" class="hidden xl:flex items-center gap-2 pl-1 pr-2 py-1 rounded-md hover:bg-muted transition-colors" aria-label="Call us">
+                <span class="size-9 rounded-full bg-secondary-soft text-secondary grid place-items-center">
+                    @svg('lucide-phone', 'h-4 w-4')
+                </span>
+                <span class="leading-tight">
+                    <span class="block text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Call us</span>
+                    <span class="block text-sm font-semibold">{{ $settings?->primary_phone ?? '+977-1-4234567' }}</span>
+                </span>
+            </a>
             <a href="{{ route('doctors.index') }}" wire:navigate class="hidden md:inline-flex items-center gap-1.5 rounded-md bg-muted px-3 py-2 text-sm font-medium text-foreground hover:bg-accent transition-colors">
                 @svg('lucide-search', 'h-4 w-4') {{ $header['find_doctor_label'] ?? 'Find Doctor' }}
             </a>
-            <a href="{{ route('appointment') }}" wire:navigate class="hidden sm:inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-card hover:opacity-90 transition-opacity">{{ $header['book_appointment_label'] ?? 'Book Appointment' }}</a>
+            <a href="{{ route('appointment') }}" wire:navigate class="btn-lift hidden sm:inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-card hover:bg-primary/90">{{ $header['book_appointment_label'] ?? 'Book Appointment' }} @svg('lucide-arrow-right', 'h-4 w-4')</a>
             <button
                 type="button"
                 class="lg:hidden inline-flex items-center justify-center rounded-md p-2 text-foreground hover:bg-muted transition-colors min-h-11 min-w-11"

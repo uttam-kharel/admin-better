@@ -1,0 +1,107 @@
+name: Deploy to Vercel
+
+# CI/CD for the livewire-app (Laravel + Livewire on Vercel).
+#
+# Required GitHub repository secrets (Settings → Secrets and variables → Actions):
+#   VERCEL_TOKEN        – Vercel API token (from https://vercel.com/account/tokens)
+#   VERCEL_ORG_ID       – team_...  (see .vercel/project.json → "orgId")
+#   VERCEL_PROJECT_ID   – prj_...   (see .vercel/project.json → "projectId")
+#
+# Uses the DIRECT vercel deploy command (not the pull/build/prebuilt pipeline),
+# because this project uses the vercel-php custom runtime — the direct command
+# is the proven path for this setup (see .vercelignore note about Composer).
+#
+# Behavior:
+#   - push to main            → production deploy (aliased to v1.sih.com.np)
+#   - pull request            → preview deploy with a unique .vercel.app URL + PR comment
+#   - workflow_dispatch       → manual production re-deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  # ── Preview deploy (pull requests) ─────────────────────────────
+  preview:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Deploy preview to Vercel
+        id: deploy
+        run: |
+          url="$(npx vercel deploy --yes --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | grep -oE 'https://[a-z0-9-]+\.vercel\.app' | tail -n 1)"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Preview URL: $url"
+
+      - name: Comment preview URL on PR
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const url = '${{ steps.deploy.outputs.url }}';
+            if (!url) return;
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 **Preview deployment ready:** ${url}`,
+            });
+
+  # ── Production deploy (push to main / manual) ──────────────────
+  production:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Deploy production to Vercel
+        run: npx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}

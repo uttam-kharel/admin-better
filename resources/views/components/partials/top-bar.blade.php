@@ -19,19 +19,21 @@ public function render()
 };
 
 ?>
-<div class="bg-foreground text-background text-xs">
-    <div class="container-page flex h-9 items-center justify-between gap-4">
+<div class="sticky top-0 z-[60] bg-emergency text-emergency-foreground text-xs shadow-[0_2px_10px_rgba(185,28,28,0.25)]">
+    <div class="container-page flex h-10 items-center justify-center sm:justify-between gap-4">
         <div class="flex items-center gap-2 min-w-0">
-            @svg('lucide-alert-triangle', 'h-3.5 w-3.5 text-emergency shrink-0')
-            <span class="hidden sm:inline truncate opacity-80">{{ $topbar['emergency_text'] ?? '24/7 Emergency Response' }} &middot; {{ $topbar['trauma_text'] ?? 'Level-1 Trauma Center' }}</span>
-            <span class="sm:hidden truncate opacity-80">{{ $topbar['emergency_text'] ?? '24/7 Emergency' }}</span>
+            <span class="emg-pulse" aria-hidden="true"></span>
+            <span aria-hidden="true">@svg('lucide-ambulance', 'h-4 w-4 shrink-0')</span>
+            <span class="truncate font-semibold">24/7 Emergency:</span>
+            <a href="tel:{{ $topbar['phone'] ?? ($settings?->emergency_phone ?? '18001234567') }}" class="truncate font-bold underline underline-offset-2 hover:opacity-85 transition-opacity">
+                {{ $topbar['phone'] ?? ($settings?->emergency_phone ?? '+977-1-XXXXXXX') }}
+            </a>
         </div>
-        <div class="flex items-center gap-3 sm:gap-5">
-            <a href="tel:{{ $topbar['phone'] ?? ($settings?->primary_phone ?? '18001234567') }}" class="hidden sm:flex items-center gap-1.5 hover:text-secondary transition-colors">
+        <div class="hidden md:flex items-center gap-5">
+            <a href="tel:{{ $topbar['phone'] ?? ($settings?->primary_phone ?? '18001234567') }}" class="hidden sm:flex items-center gap-1.5 opacity-90 hover:opacity-100 transition-opacity">
                 @svg('lucide-phone', 'h-3.5 w-3.5') {{ $topbar['phone'] ?? ($settings?->primary_phone ?? '1-800-123-4567') }}
             </a>
-            <a href="{{ $topbar['patient_portal_url'] ?? '/pages/patient-portal' }}" wire:navigate class="hover:text-secondary transition-colors hidden md:inline">{{ $topbar['patient_portal_label'] ?? 'Patient Portal' }}</a>
-            <a href="tel:{{ $topbar['phone'] ?? ($settings?->emergency_phone ?? '18001234567') }}" class="bg-emergency text-emergency-foreground px-3 py-1 rounded-sm font-semibold tracking-wide hover:opacity-90 transition-opacity">Emergency</a>
+            <a href="{{ $topbar['patient_portal_url'] ?? '/pages/patient-portal' }}" wire:navigate class="hidden lg:inline opacity-90 hover:opacity-100 transition-opacity">{{ $topbar['patient_portal_label'] ?? 'Patient Portal' }}</a>
         </div>
     </div>
 </div>

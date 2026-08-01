@@ -23,6 +23,9 @@
         @if($meta)
             <p class="text-xs text-muted-foreground mt-1">{{ $meta }}</p>
         @endif
+        <span class="arrow-nudge mt-4 inline-flex items-center gap-1.5 rounded-md border border-primary/30 px-4 py-2 text-sm font-semibold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+            View Profile @svg('lucide-arrow-right', 'h-4 w-4')
+        </span>
     </a>
 @else
     <div {{ $attributes->class($classes) }}>
