@@ -183,7 +183,7 @@ public string $resource;
             'fields' => $config['fields'],
             'viewable' => $config['viewable'] ?? true,
             'modalTitle' => ($this->creating ? 'New ' : 'Edit ') . rtrim($config['title'], 's'),
-        ]);
+        ])->layout('layouts.admin', ['title' => $config['title'].' — Admin']);
     }
 
     protected function resolveModel(): string

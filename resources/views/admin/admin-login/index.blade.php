@@ -43,7 +43,7 @@ public string $email = '';
     {
         return $this->view([
             'isLocal' => app()->environment('local'),
-        ]);
+        ])->layout('layouts.clean', ['title' => 'Admin Login']);
     }
 };
 

@@ -134,7 +134,7 @@ public string $search = '';
             'tree' => $tree,
             'roots' => $roots,
             'allItems' => $allItems,
-        ]);
+        ])->layout('layouts.admin', ['title' => 'Menus — Admin']);
     }
 
     private function buildTree($items): array
