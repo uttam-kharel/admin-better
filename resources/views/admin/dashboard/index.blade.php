@@ -10,17 +10,24 @@ use App\Models\HealthPackage;
 use App\Models\HeroSlide;
 use App\Models\JobApplication;
 use App\Models\JobOpening;
+use App\Models\PageVisit;
 use App\Models\Service;
 use Livewire\Component;
 use App\Models\AdminUser;
 
 
 new class extends Component
-{
-public array $tiles = [];
+{    public array $tiles = [];
     public $recentAppointments;
     public $recentContacts;
     public $recentApplicants;
+
+    public array $traffic = [];
+    public $chartDays;
+    public $topPages;
+    public $deviceSplit;
+    public $browserSplit;
+    public $recentVisits;
 
     public function mount(): void
     {
@@ -53,6 +60,48 @@ public array $tiles = [];
         $this->recentAppointments = Appointment::latest()->take(5)->get();
         $this->recentContacts = ContactSubmission::latest()->take(5)->get();
         $this->recentApplicants = JobApplication::with('jobOpening')->latest()->take(5)->get();
+
+        $this->traffic = [
+            'total' => PageVisit::count(),
+            'unique' => PageVisit::query()->distinct()->count('visitor_id'),
+            'today' => PageVisit::whereDate('created_at', today())->count(),
+            'week' => PageVisit::where('created_at', '>=', now()->subDays(7))->count(),
+        ];
+
+        // Last 14 days, zero-filled so the chart always has 14 bars.
+        $raw = PageVisit::query()
+            ->selectRaw("date(created_at) as day, count(*) as total")
+            ->where('created_at', '>=', now()->subDays(13)->startOfDay())
+            ->groupBy('day')
+            ->pluck('total', 'day');
+
+        $chart = collect();
+        for ($i = 13; $i >= 0; $i--) {
+            $day = now()->subDays($i)->toDateString();
+            $chart->push(['day' => $day, 'total' => (int) ($raw[$day] ?? 0)]);
+        }
+        $this->chartDays = $chart;
+
+        $this->topPages = PageVisit::query()
+            ->selectRaw('path, count(*) as total')
+            ->groupBy('path')
+            ->orderByDesc('total')
+            ->take(6)
+            ->get();
+
+        $this->deviceSplit = PageVisit::query()
+            ->selectRaw('COALESCE(device, "unknown") as device, count(*) as total')
+            ->groupBy('device')
+            ->orderByDesc('total')
+            ->get();
+
+        $this->browserSplit = PageVisit::query()
+            ->selectRaw('COALESCE(browser, "Other") as browser, count(*) as total')
+            ->groupBy('browser')
+            ->orderByDesc('total')
+            ->get();
+
+        $this->recentVisits = PageVisit::latest()->take(6)->get();
     }
 
     public function render()
@@ -76,6 +125,66 @@ public array $tiles = [];
                     <x-slot:icon>@svg($tile['icon'])</x-slot:icon>
                 </x-ui.stat-card>
             @endforeach
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <x-ui.stat-card :value="number_format($traffic['total'])" label="Total visits">
+                <x-slot:icon>@svg('lucide-eye')</x-slot:icon>
+            </x-ui.stat-card>
+            <x-ui.stat-card :value="number_format($traffic['unique'])" label="Unique visitors">
+                <x-slot:icon>@svg('lucide-users')</x-slot:icon>
+            </x-ui.stat-card>
+            <x-ui.stat-card :value="number_format($traffic['today'])" label="Visits today">
+                <x-slot:icon>@svg('lucide-calendar-days')</x-slot:icon>
+            </x-ui.stat-card>
+            <x-ui.stat-card :value="number_format($traffic['week'])" label="Visits (7 days)">
+                <x-slot:icon>@svg('lucide-trending-up')</x-slot:icon>
+            </x-ui.stat-card>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-4">
+            <x-ui.card class="lg:col-span-2">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="font-semibold text-sm">Traffic — last 14 days</h3>
+                        <p class="text-xs text-muted-foreground mt-0.5">Daily page visits</p>
+                    </div>
+                    <a href="{{ route('admin.analytics') }}" class="text-xs text-primary font-semibold inline-flex items-center gap-1">
+                        View analytics @svg('lucide-arrow-right', 'h-3 w-3')
+                    </a>
+                </div>
+                <div class="flex items-end gap-1.5 h-32">
+                    @php $max = max(1, $chartDays->max('total')); @endphp
+                    @foreach($chartDays as $bar)
+                        <div class="flex-1 flex flex-col items-center gap-1 min-w-0" title="{{ $bar['day'] }} — {{ $bar['total'] }} visits">
+                            <div class="w-full rounded-t bg-primary/70 group-hover:bg-primary transition-colors" style="height: {{ max(2, round($bar['total'] / $max * 100)) }}%"></div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="flex gap-1.5 mt-1.5">
+                    @foreach($chartDays as $bar)
+                        <div class="flex-1 text-center text-[9px] text-muted-foreground min-w-0">{{ \Carbon\Carbon::parse($bar['day'])->format('d/m') }}</div>
+                    @endforeach
+                </div>
+            </x-ui.card>
+
+            <x-ui.card padding="none" class="overflow-hidden">
+                <div class="px-5 py-4 border-b border-border">
+                    <h3 class="font-semibold text-sm">Top pages</h3>
+                </div>
+                @if($topPages->count() === 0)
+                    <p class="p-6 text-sm text-muted-foreground">No visits recorded yet.</p>
+                @else
+                    <ul class="divide-y divide-border">
+                        @foreach($topPages as $page)
+                            <li class="px-5 py-3 flex items-center justify-between gap-3 text-sm">
+                                <span class="font-medium truncate">{{ $page->path }}</span>
+                                <span class="text-xs text-muted-foreground tabular-nums shrink-0">{{ $page->total }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </x-ui.card>
         </div>
 
         <div class="grid lg:grid-cols-3 gap-4">
@@ -128,6 +237,33 @@ public array $tiles = [];
             </x-ui.card>
 
             <x-ui.card padding="none" class="overflow-hidden">
+                <div class="px-5 py-4 border-b border-border">
+                    <h3 class="font-semibold text-sm">Devices &amp; browsers</h3>
+                </div>
+                <div class="px-5 py-4 space-y-4">
+                    @foreach($deviceSplit as $device)
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="capitalize text-muted-foreground">{{ $device->device }}</span>
+                                <span class="tabular-nums">{{ $device->total }}</span>
+                            </div>
+                            <div class="h-1.5 rounded-full bg-muted overflow-hidden">
+                                <div class="h-full rounded-full bg-primary" style="width: {{ $traffic['total'] ? round($device->total / max(1,$traffic['total']) * 100) : 0 }}%"></div>
+                            </div>
+                        </div>
+                    @endforeach
+                    <div class="pt-2 border-t border-border space-y-1.5">
+                        @foreach($browserSplit->take(4) as $browser)
+                            <div class="flex justify-between text-xs">
+                                <span class="text-muted-foreground">{{ $browser->browser }}</span>
+                                <span class="tabular-nums">{{ $browser->total }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </x-ui.card>
+
+            <x-ui.card padding="none" class="overflow-hidden">
                 <div class="px-5 py-4 border-b border-border flex items-center justify-between">
                     <h3 class="font-semibold text-sm">Recent contact messages</h3>
                     <a href="{{ route('admin.contact-submissions') }}" class="text-xs text-primary font-semibold inline-flex items-center gap-1">
@@ -148,6 +284,53 @@ public array $tiles = [];
                             </li>
                         @endforeach
                     </ul>
+                @endif
+            </x-ui.card>
+        </div>
+        <div class="grid lg:grid-cols-3 gap-4">
+            <x-ui.card padding="none" class="overflow-hidden lg:col-span-3">
+                <div class="px-5 py-4 border-b border-border flex items-center justify-between">
+                    <div>
+                        <h3 class="font-semibold text-sm">Recent visits</h3>
+                        <p class="text-xs text-muted-foreground mt-0.5">Latest page views across the site</p>
+                    </div>
+                    <a href="{{ route('admin.analytics') }}" class="text-xs text-primary font-semibold inline-flex items-center gap-1">
+                        View all @svg('lucide-arrow-right', 'h-3 w-3')
+                    </a>
+                </div>
+                @if($recentVisits->count() === 0)
+                    <p class="p-6 text-sm text-muted-foreground">No visits recorded yet.</p>
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border">
+                                    <th class="px-5 py-2.5 font-semibold">Page</th>
+                                    <th class="px-5 py-2.5 font-semibold hidden md:table-cell">Referrer</th>
+                                    <th class="px-5 py-2.5 font-semibold hidden sm:table-cell">Device</th>
+                                    <th class="px-5 py-2.5 font-semibold hidden sm:table-cell">Browser</th>
+                                    <th class="px-5 py-2.5 font-semibold">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border">
+                                @foreach($recentVisits as $visit)
+                                    <tr>
+                                        <td class="px-5 py-3 font-medium truncate max-w-[220px]">{{ $visit->path }}</td>
+                                        <td class="px-5 py-3 text-xs text-muted-foreground truncate max-w-[180px] hidden md:table-cell">
+                                            @if($visit->referer)
+                                                {{ parse_url($visit->referer, PHP_URL_HOST) }}
+                                            @else
+                                                <span class="text-muted-foreground/50">Direct</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-5 py-3 text-xs text-muted-foreground capitalize hidden sm:table-cell">{{ $visit->device ?? '—' }}</td>
+                                        <td class="px-5 py-3 text-xs text-muted-foreground hidden sm:table-cell">{{ $visit->browser ?? '—' }}</td>
+                                        <td class="px-5 py-3 text-xs text-muted-foreground tabular-nums">{{ $visit->created_at->format('M j, H:i') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 @endif
             </x-ui.card>
         </div>

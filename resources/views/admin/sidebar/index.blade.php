@@ -28,6 +28,7 @@ public function render()
                 'label' => 'Overview',
                 'items' => [
                     ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'icon' => 'layout-dashboard'],
+                    ['route' => 'admin.analytics', 'label' => 'Analytics', 'icon' => 'bar-chart-3'],
                 ],
             ],
             [

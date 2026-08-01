@@ -32,6 +32,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
     Route::middleware(['auth:admin'])->group(function () {
         Route::livewire('/', 'admin::dashboard.index')->name('dashboard');
+        Route::livewire('/analytics', 'admin::analytics.index')->name('analytics');
         Route::livewire('/appointments', 'admin::resource-manager.index')->defaults('resource', 'appointments')->name('appointments');
         Route::livewire('/contact-submissions', 'admin::resource-manager.index')->defaults('resource', 'contact-submissions')->name('contact-submissions');
         Route::livewire('/doctors', 'admin::resource-manager.index')->defaults('resource', 'doctors')->name('doctors');

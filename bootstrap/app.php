@@ -19,6 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
         ]);
+
+        // Record every public page view into page_visits (traffic analytics).
+        $middleware->web(append: [
+            \App\Http\Middleware\TrackPageVisits::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
