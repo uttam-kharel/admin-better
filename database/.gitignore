@@ -1,1 +1,8 @@
-*.sqlite*
+# SQLite sidecar files (WAL/journal) — never commit these.
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# The main database file is intentionally TRACKED: it carries the site's
+# content (read-only on Vercel) so CI/CD deploys render real data.
+# (See .vercelignore note about database/database.sqlite.)
