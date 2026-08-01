@@ -22,6 +22,7 @@ class BlogsShow extends Component
         return view('pages.blogs.show', [
             'post' => $post,
             'related' => $related,
+            'author' => $post->authorInfo,
         ]);
     }
 }
