@@ -107,14 +107,19 @@ jobs:
         run: npm run build
 
       # Optional: apply Laravel migrations to the Neon Postgres database.
-      # Runs ONLY when the DATABASE_URL secret exists (skip otherwise).
-      # Add it in: GitHub repo → Settings → Secrets and variables → Actions.
-      - name: Run migrations on Neon (if DATABASE_URL secret is set)
-        if: ${{ secrets.DATABASE_URL != '' }}
+      # Runs ONLY when the DATABASE_URL secret exists (skips otherwise).
+      # NOTE: the secret is referenced in env (not in an if: condition) —
+      # referencing an unset secret in if: fails GitHub's workflow validation.
+      # Add the secret in: GitHub repo → Settings → Secrets → Actions.
+      - name: Run migrations on Neon (skips when DATABASE_URL secret unset)
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           DB_CONNECTION: pgsql
         run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "DATABASE_URL secret not set — skipping Neon migrations."
+            exit 0
+          fi
           cp .env.example .env
           php artisan migrate --force
 
