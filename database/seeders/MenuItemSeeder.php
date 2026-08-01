@@ -43,7 +43,6 @@ class MenuItemSeeder extends Seeder
             ['id' => 52, 'parent_id' => 5, 'title' => 'Quality & Accreditation', 'slug' => 'quality', 'type' => 'link', 'url' => '/pages/quality', 'icon' => null, 'description' => null, 'order' => 1],
             ['id' => 53, 'parent_id' => 5, 'title' => 'Awards & Recognition', 'slug' => 'awards', 'type' => 'link', 'url' => '/pages/awards', 'icon' => null, 'description' => null, 'order' => 2],
             ['id' => 54, 'parent_id' => 5, 'title' => 'CSR Activities', 'slug' => 'csr', 'type' => 'link', 'url' => '/pages/csr', 'icon' => null, 'description' => null, 'order' => 3],
-            ['id' => 55, 'parent_id' => 5, 'title' => 'Careers', 'slug' => 'careers', 'type' => 'link', 'url' => '/careers', 'icon' => null, 'description' => 'Explore job openings', 'order' => 0],
             ['id' => 56, 'parent_id' => 5, 'title' => 'Blood Bank', 'slug' => 'blood-bank', 'type' => 'link', 'url' => '/pages/blood-bank', 'icon' => null, 'description' => null, 'order' => 5],
             ['id' => 57, 'parent_id' => 5, 'title' => 'Organ Donation', 'slug' => 'organ-donation', 'type' => 'link', 'url' => '/pages/organ-donation', 'icon' => null, 'description' => null, 'order' => 6],
             ['id' => 58, 'parent_id' => 5, 'title' => 'Contact', 'slug' => 'contact', 'type' => 'link', 'url' => '/contact', 'icon' => null, 'description' => null, 'order' => 7],
