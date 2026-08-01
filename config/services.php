@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'blob' => [
+        // Vercel Blob read-write token (https://vercel.com/docs/storage/vercel-blob).
+        // When set, image/CV uploads go to Vercel Blob; otherwise they fall back
+        // to base64 data URIs stored in the DB (see App\Services\BlobStorage).
+        'token' => env('BLOB_READ_WRITE_TOKEN'),
+    ],
+
 ];

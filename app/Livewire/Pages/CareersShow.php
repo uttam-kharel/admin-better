@@ -55,9 +55,9 @@ class CareersShow extends Component
         ];
 
         if ($this->resume) {
-            // Vercel's filesystem is ephemeral and /storage is not served — embed
-            // the CV as a base64 data URI so it persists in the committed DB.
-            $data['resume_url'] = 'data:' . $this->resume->getMimeType() . ';base64,' . base64_encode($this->resume->get());
+            // Upload to Vercel Blob when BLOB_READ_WRITE_TOKEN is set; otherwise
+            // embed a base64 data URI so it persists in the committed DB.
+            $data['resume_url'] = \App\Services\BlobStorage::store($this->resume, 'cvs');
         }
 
         JobApplication::create($data);

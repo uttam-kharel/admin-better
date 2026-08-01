@@ -242,10 +242,9 @@ public string $resource;
             $value = $this->form[$name] ?? null;
 
             if ($field['type'] === 'image' && $value instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
-                // Vercel's filesystem is ephemeral and /storage is not served —
-                // embed the image as a base64 data URI so it renders immediately
-                // and persists in the committed SQLite DB like every other field.
-                $data[$name] = 'data:' . $value->getMimeType() . ';base64,' . base64_encode($value->get());
+                // Upload to Vercel Blob when BLOB_READ_WRITE_TOKEN is set; otherwise
+                // embed a base64 data URI (persists in the committed SQLite DB).
+                $data[$name] = \App\Services\BlobStorage::store($value, 'images');
                 continue;
             }
 
