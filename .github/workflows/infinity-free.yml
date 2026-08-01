@@ -10,14 +10,16 @@ jobs:
   deploy:
     name: Deploy via FTP
     runs-on: ubuntu-latest
-    # Skip (not fail) when the FTP secrets aren't configured yet.
-    if: ${{ secrets.FTP_USERNAME != '' && secrets.FTP_PASSWORD != '' }}
 
     steps:
       - name: Get latest code
         uses: actions/checkout@v4
 
+      # Skip (not fail) when the FTP secrets aren't configured yet.
+      # Note: `secrets` is NOT allowed in job-level `if`, so the guard
+      # lives on this step where the secrets context is available.
       - name: Deploy to InfinityFree via FTP
+        if: ${{ secrets.FTP_USERNAME != '' && secrets.FTP_PASSWORD != '' }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ftpupload.net
