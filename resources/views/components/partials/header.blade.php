@@ -89,10 +89,10 @@ public function render()
                     @php $isMega = $item->type === 'mega'; @endphp
                     @php $parentActive = $item->children->contains(fn ($c) => $isActive($c->url)); @endphp
                     <div
-                        x-data="{ open: false }"
-                        @mouseenter="open = true"
-                        @mouseleave="open = false"
-                        class="relative"
+                        x-data="{ open: false, closeTimer: null }"
+                        @mouseenter="clearTimeout(closeTimer); open = true"
+                        @mouseleave="closeTimer = setTimeout(() => open = false, 150)"
+                        class="{{ $isMega ? 'static' : 'relative' }}"
                     >
                         <button
                             class="nav-link flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors {{ $parentActive ? 'is-active text-primary' : 'text-foreground/80 hover:text-primary' }}"
@@ -103,32 +103,71 @@ public function render()
                             {{ $item->title }}
                             <svg class="h-3.5 w-3.5 transition-transform" :class="open && 'rotate-180'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
                         </button>
-                        <div
-                            x-show="open"
-                            x-transition
-                            x-cloak
-                            class="absolute left-1/2 -translate-x-1/2 top-full pt-3 z-50"
-                            @click.outside="open = false"
-                            role="menu"
-                        >
-                            <div class="rounded-xl bg-popover hairline shadow-elevated p-5 {{ $isMega ? 'w-[640px]' : 'w-64' }} animate-fade-up">
-                                <div class="{{ $isMega ? 'grid grid-cols-2 gap-x-6 gap-y-3' : 'space-y-3' }}">
-                                    @foreach($item->children as $child)
-                                        @php $childActive = $isActive($child->url); @endphp
-                                        @if($child->type === 'external' && $child->url)
-                                            <a href="{{ $child->url }}" target="_blank" rel="noreferrer" class="block py-2 text-sm transition-colors {{ $childActive ? 'text-primary font-semibold' : 'text-foreground/80 hover:text-primary' }}" @if($childActive) aria-current="page" @endif>{{ $child->title }}</a>
-                                        @else
-                                            <a href="{{ $child->url ?? '/' }}" wire:navigate class="block group" @if($childActive) aria-current="page" @endif>
-                                                <div class="font-medium text-sm transition-colors {{ $childActive ? 'text-primary' : 'text-foreground group-hover:text-primary' }}">{{ $child->title }}</div>
-                                                @if($child->description)
-                                                    <div class="text-xs text-muted-foreground mt-0.5">{{ $child->description }}</div>
+
+                        @if($isMega)
+                            {{-- Full-width mega menu anchored to the header — spans the container so it never overlaps sibling nav links --}}
+                            <div
+                                x-show="open"
+                                x-transition
+                                x-cloak
+                                class="absolute left-0 right-0 top-full z-50"
+                                @click.outside="open = false"
+                                role="menu"
+                            >
+                                <div class="hairline border-t bg-popover/95 backdrop-blur-md shadow-elevated">
+                                    <div class="container-page py-7">
+                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4">
+                                            @foreach($item->children as $child)
+                                                @php $childActive = $isActive($child->url); @endphp
+                                                @if($child->type === 'external' && $child->url)
+                                                    <a href="{{ $child->url }}" target="_blank" rel="noreferrer" class="group block rounded-md px-3 py-2 transition-colors {{ $childActive ? 'text-primary' : 'hover:bg-muted/60' }}" @if($childActive) aria-current="page" @endif>
+                                                        <div class="font-medium text-sm {{ $childActive ? 'text-primary' : 'text-foreground group-hover:text-primary' }}">{{ $child->title }}</div>
+                                                        @if($child->description)
+                                                            <div class="text-xs text-muted-foreground mt-0.5">{{ $child->description }}</div>
+                                                        @endif
+                                                    </a>
+                                                @else
+                                                    <a href="{{ $child->url ?? '/' }}" wire:navigate class="group block rounded-md px-3 py-2 transition-colors {{ $childActive ? 'text-primary' : 'hover:bg-muted/60' }}" @if($childActive) aria-current="page" @endif>
+                                                        <div class="font-medium text-sm {{ $childActive ? 'text-primary' : 'text-foreground group-hover:text-primary' }}">{{ $child->title }}</div>
+                                                        @if($child->description)
+                                                            <div class="text-xs text-muted-foreground mt-0.5">{{ $child->description }}</div>
+                                                        @endif
+                                                    </a>
                                                 @endif
-                                            </a>
-                                        @endif
-                                    @endforeach
+                                            @endforeach
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        @else
+                            {{-- Compact dropdown anchored to its trigger's left edge — reads as attached to the nav --}}
+                            <div
+                                x-show="open"
+                                x-transition
+                                x-cloak
+                                class="absolute left-0 top-full pt-2 z-50"
+                                @click.outside="open = false"
+                                role="menu"
+                            >
+                                <div class="w-72 rounded-xl bg-popover hairline shadow-elevated p-2 animate-fade-up">
+                                    <div class="space-y-1">
+                                        @foreach($item->children as $child)
+                                            @php $childActive = $isActive($child->url); @endphp
+                                            @if($child->type === 'external' && $child->url)
+                                                <a href="{{ $child->url }}" target="_blank" rel="noreferrer" class="block rounded-md px-3 py-2 text-sm transition-colors {{ $childActive ? 'bg-muted text-primary font-semibold' : 'text-foreground/80 hover:bg-muted hover:text-primary' }}" @if($childActive) aria-current="page" @endif>{{ $child->title }}</a>
+                                            @else
+                                                <a href="{{ $child->url ?? '/' }}" wire:navigate class="group block rounded-md px-3 py-2 transition-colors {{ $childActive ? 'bg-muted' : 'hover:bg-muted' }}" @if($childActive) aria-current="page" @endif>
+                                                    <div class="font-medium text-sm {{ $childActive ? 'text-primary' : 'text-foreground group-hover:text-primary' }}">{{ $child->title }}</div>
+                                                    @if($child->description)
+                                                        <div class="text-xs text-muted-foreground mt-0.5">{{ $child->description }}</div>
+                                                    @endif
+                                                </a>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 @else
                     @php $itemActive = $isActive($item->url); @endphp
