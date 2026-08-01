@@ -10,6 +10,8 @@ jobs:
   deploy:
     name: Deploy via FTP
     runs-on: ubuntu-latest
+    # Skip (not fail) when the FTP secrets aren't configured yet.
+    if: ${{ secrets.FTP_USERNAME != '' && secrets.FTP_PASSWORD != '' }}
 
     steps:
       - name: Get latest code
