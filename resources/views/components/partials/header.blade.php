@@ -26,9 +26,29 @@ public function render()
             return $currentPath === $prefix || str_starts_with($currentPath, $prefix . '/');
         };
 
+        // URLs that have their own top-level nav link own the active state.
+        // If the same URL also appears nested inside a dropdown (e.g. /careers
+        // is both a top-level link and a child of About), the dropdown child
+        // must NOT light up its parent — otherwise both show active at once.
+        $directUrls = $menus
+            ->filter(fn ($m) => $m->children->isEmpty())
+            ->map(fn ($m) => trim((string) $m->url, '/'))
+            ->filter(fn ($url) => $url !== '')
+            ->values()
+            ->all();
+
+        // A dropdown child counts as active only if its URL isn't owned by a top-level link.
+        $isChildActive = function ($child) use ($isActive, $directUrls) {
+            $url = trim((string) $child->url, '/');
+            if ($url !== '' && in_array($url, $directUrls, true)) {
+                return false;
+            }
+            return $isActive($child->url);
+        };
+
         // Parent ids whose children are active — used to auto-expand the mobile accordion.
         $activeParentIds = $menus
-            ->filter(fn ($m) => $m->children->contains(fn ($c) => $isActive($c->url)))
+            ->filter(fn ($m) => $m->children->contains($isChildActive))
             ->pluck('id')
             ->map(fn ($id) => (int) $id)
             ->values()
@@ -87,7 +107,7 @@ public function render()
             @foreach($menus as $item)
                 @if($item->children && $item->children->count() > 0)
                     @php $isMega = $item->type === 'mega'; @endphp
-                    @php $parentActive = $item->children->contains(fn ($c) => $isActive($c->url)); @endphp
+                    @php $parentActive = $item->children->contains($isChildActive); @endphp
                     <div
                         x-data="{ open: false, closeTimer: null }"
                         @mouseenter="clearTimeout(closeTimer); open = true"
@@ -218,7 +238,7 @@ public function render()
                 @foreach($menus as $item)
                     @if($item->children && $item->children->count() > 0)
                         <div>
-                            @php $mobileParentActive = $item->children->contains(fn ($c) => $isActive($c->url)); @endphp
+                            @php $mobileParentActive = $item->children->contains($isChildActive); @endphp
                             <button
                                 type="button"
                                 class="mobile-nav-link w-full flex items-center justify-between py-4 text-base font-semibold transition-colors {{ $mobileParentActive ? 'is-active text-primary' : 'text-foreground' }}"
