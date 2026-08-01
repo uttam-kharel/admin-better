@@ -10,7 +10,6 @@
 /.git
 /.kilo
 /.github
-/.htaccess
 /php-dev.ini
 
 # Local runtime artifacts (logs, compiled views, caches).

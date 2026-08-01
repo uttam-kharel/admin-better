@@ -11,8 +11,7 @@ This is a **Laravel 13 + Livewire 4** hospital website (public site + admin pane
 > playbook for binding a custom domain (exact commands used). &nbsp;·&nbsp;
 > [**DOMAIN-MAP.md**](DOMAIN-MAP.md) — the *current state* of the `v1.sih.com.np` mapping.
 > &nbsp;·&nbsp; [**DATABASE-SETUP.md**](DATABASE-SETUP.md) — connect a Postgres database to make the
-> site fully writable (fixes the read-only SQLite limitation in §7). &nbsp;·&nbsp; The alternative
-> InfinityFree hosting path is in [**DEPLOYMENT.md**](DEPLOYMENT.md).
+> site fully writable (fixes the read-only SQLite limitation in §7).
 
 ---
 
@@ -41,7 +40,7 @@ This is a **Laravel 13 + Livewire 4** hospital website (public site + admin pane
   `admin::resource-manager` component.
 - **Data:** content lives in **SQLite** (`database/database.sqlite`, ~35 tables, full content).
   On Vercel this file is uploaded as-is and served **read-only** — pages render with real data.
-- The site is deployed on branch `refactors`.
+- The site is deployed on branch `main` via the Vercel CI/CD workflow.
 
 ---
 
@@ -185,7 +184,6 @@ require __DIR__.'/../public/index.php';
 /.git
 /.kilo
 /.github
-/.htaccess
 /php-dev.ini
 
 # Local runtime artifacts (logs, compiled views, caches).
@@ -208,7 +206,7 @@ require __DIR__.'/../public/index.php';
 | Entry | Why |
 |---|---|
 | `/vendor` | Vercel re-installs Composer dependencies during the build itself. |
-| `/.env`, `/.env.local`, `/.freebuff`, `/node_modules`, `/tests`, `/.git`, `/.kilo`, `/.github`, `/.htaccess`, `/php-dev.ini` | Local/development/host-only files that must never ship. |
+| `/.env`, `/.env.local`, `/.freebuff`, `/node_modules`, `/tests`, `/.git`, `/.kilo`, `/.github`, `/php-dev.ini` | Local/development/host-only files that must never ship. |
 | `/storage/*` | Local runtime artifacts (logs, caches) — regenerated or redirected to `/tmp` at runtime. |
 | `/public/hot` | A 17-byte Vite **dev-mode** marker. If uploaded, `@vite` renders `localhost:5173` links instead of built assets → CSS silently breaks. |
 | `/public/storage` | Symlink to `storage/app/public` — broken on Vercel's filesystem. |
