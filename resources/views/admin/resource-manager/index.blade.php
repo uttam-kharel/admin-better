@@ -239,12 +239,10 @@ public string $resource;
             $value = $this->form[$name] ?? null;
 
             if ($field['type'] === 'image' && $value instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
-                $folder = match ($this->resource) {
-                    'doctors' => 'doctors',
-                    'departments' => 'departments',
-                    default => 'uploads',
-                };
-                $data[$name] = $value->store($folder, 'public');
+                // Vercel's filesystem is ephemeral and /storage is not served —
+                // embed the image as a base64 data URI so it renders immediately
+                // and persists in the committed SQLite DB like every other field.
+                $data[$name] = 'data:' . $value->getMimeType() . ';base64,' . base64_encode($value->get());
                 continue;
             }
 
@@ -681,6 +679,17 @@ public string $resource;
     {
         return $this->optionList($values);
     }
+
+    // Uploaded images/CVs are stored as base64 data URIs (Vercel has no
+    // persistent /storage); external http(s) URLs are passed through.
+    protected function displayUrl(mixed $value): string
+    {
+        if (is_string($value) && (str_starts_with($value, 'http') || str_starts_with($value, 'data:'))) {
+            return $value;
+        }
+
+        return Storage::url((string) $value);
+    }
 };
 
 ?>
@@ -730,14 +739,14 @@ public string $resource;
                                     @if(($col['type'] ?? 'text') === 'image' && $val)
                                         <div class="flex items-center gap-3">
                                             <div class="size-10 rounded-full overflow-hidden bg-muted shrink-0">
-                                                <img src="{{ str_starts_with($val, 'http') ? $val : Storage::url($val) }}" alt="" class="size-full object-cover" loading="lazy" />
+                                                <img src="{{ $this->displayUrl($val) }}" alt="" class="size-full object-cover" loading="lazy" />
                                             </div>
                                         </div>
                                     @elseif(($col['type'] ?? 'text') === 'image_text')
                                         <div class="flex items-center gap-3">
                                             @if($val)
                                                 <div class="size-10 rounded-full overflow-hidden bg-muted shrink-0">
-                                                    <img src="{{ str_starts_with($val, 'http') ? $val : Storage::url($val) }}" alt="{{ data_get($item, 'name') ?? data_get($item, 'title') ?? '' }}" class="size-full object-cover" loading="lazy" />
+                                                    <img src="{{ $this->displayUrl($val) }}" alt="{{ data_get($item, 'name') ?? data_get($item, 'title') ?? '' }}" class="size-full object-cover" loading="lazy" />
                                                 </div>
                                             @else
                                                 <div class="size-10 rounded-full bg-muted shrink-0 grid place-items-center text-xs text-muted-foreground font-semibold">
@@ -815,10 +824,10 @@ public string $resource;
                                         <div class="mt-2 flex items-center gap-3 p-4 rounded-lg border border-border bg-muted/20">
                                             @svg('lucide-file-text', 'h-8 w-8 text-primary shrink-0')
                                             <div class="min-w-0 flex-1">
-                                                <p class="text-sm font-medium truncate">{{ basename($val) }}</p>
+                                                <p class="text-sm font-medium truncate">{{ str_starts_with($val, 'data:') ? 'Uploaded document' : basename($val) }}</p>
                                                 <p class="text-xs text-muted-foreground">Uploaded document</p>
                                             </div>
-                                            <a href="{{ Storage::url($val) }}" target="_blank" class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 shrink-0">
+                                            <a href="{{ $this->displayUrl($val) }}" target="_blank" rel="noreferrer" class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 shrink-0">
                                                 @svg('lucide-download', 'h-3.5 w-3.5')
                                                 Download
                                             </a>
@@ -831,7 +840,7 @@ public string $resource;
                                 <div>
                                     <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{{ $field['label'] }}</span>
                                     <div class="mt-1">
-                                        <img src="{{ str_starts_with($val, 'http') ? $val : Storage::url($val) }}" class="h-20 w-20 rounded-lg object-cover border border-border" />
+                                        <img src="{{ $this->displayUrl($val) }}" class="h-20 w-20 rounded-lg object-cover border border-border" />
                                     </div>
                                 </div>
                             @elseif($field['type'] === 'url' && $val)
@@ -912,7 +921,7 @@ public string $resource;
                                         @if($tempUpload)
                                             <img src="{{ $tempUpload->temporaryUrl() }}" class="h-24 w-24 rounded-lg object-cover border border-border" />
                                         @else
-                                            <img src="{{ str_starts_with($existingImage, 'http') ? $existingImage : Storage::url($existingImage) }}" class="h-24 w-24 rounded-lg object-cover border border-border" />
+                                            <img src="{{ $this->displayUrl($existingImage) }}" class="h-24 w-24 rounded-lg object-cover border border-border" />
                                         @endif
                                     </div>
                                 @endif
@@ -922,6 +931,30 @@ public string $resource;
                                     accept="image/jpeg,image/png,image/webp,image/gif"
                                     class="w-full text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-primary-foreground hover:file:opacity-90"
                                 />
+                                @if($helper)
+                                    <p class="text-xs text-muted-foreground mt-1">{{ $helper }}</p>
+                                @endif
+                            </div>
+                        @elseif(str_contains($name, 'resume'))
+                            {{-- Resume/CV is stored as a base64 data URI — render read-only, never dump the blob into a text input --}}
+                            @php $resumeVal = $form[$name] ?? ''; $isDataResume = is_string($resumeVal) && str_starts_with($resumeVal, 'data:'); @endphp
+                            <div>
+                                <x-form.label class="mb-1.5">{{ $field['label'] }}</x-form.label>
+                                @if($resumeVal)
+                                    <div class="flex items-center gap-3 p-4 rounded-lg border border-border bg-muted/20">
+                                        @svg('lucide-file-text', 'h-8 w-8 text-primary shrink-0')
+                                        <div class="min-w-0 flex-1">
+                                            <p class="text-sm font-medium truncate">{{ $isDataResume ? 'Uploaded document' : basename($resumeVal) }}</p>
+                                            <p class="text-xs text-muted-foreground">{{ $isDataResume ? 'Saved as embedded file' : 'Uploaded document' }}</p>
+                                        </div>
+                                        <a href="{{ $this->displayUrl($resumeVal) }}" target="_blank" rel="noreferrer" class="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:opacity-90 shrink-0">
+                                            @svg('lucide-download', 'h-3.5 w-3.5')
+                                            Download
+                                        </a>
+                                    </div>
+                                @else
+                                    <p class="mt-1 text-sm text-muted-foreground">No file uploaded.</p>
+                                @endif
                                 @if($helper)
                                     <p class="text-xs text-muted-foreground mt-1">{{ $helper }}</p>
                                 @endif

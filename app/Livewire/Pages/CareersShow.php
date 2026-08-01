@@ -55,7 +55,9 @@ class CareersShow extends Component
         ];
 
         if ($this->resume) {
-            $data['resume_url'] = $this->resume->store('cvs', 'public');
+            // Vercel's filesystem is ephemeral and /storage is not served — embed
+            // the CV as a base64 data URI so it persists in the committed DB.
+            $data['resume_url'] = 'data:' . $this->resume->getMimeType() . ';base64,' . base64_encode($this->resume->get());
         }
 
         JobApplication::create($data);
