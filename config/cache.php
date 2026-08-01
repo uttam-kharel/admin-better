@@ -15,7 +15,9 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'database'),
+    // When a Vercel KV / Upstash Redis URL is set, use redis automatically;
+    // otherwise fall back to the database store (persists on Neon Postgres).
+    'default' => env('CACHE_STORE', (env('REDIS_URL') || env('KV_URL')) ? 'redis' : 'database'),
 
     /*
     |--------------------------------------------------------------------------

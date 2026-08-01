@@ -12,6 +12,7 @@
         "laravel/framework": "^13.8",
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^4.3",
+        "predis/predis": "^3.5",
         "technikermathe/blade-lucide-icons": "^3.156"
     },
     "require-dev": {

@@ -147,7 +147,10 @@ return [
 
     'redis' => [
 
-        'client' => env('REDIS_CLIENT', 'phpredis'),
+        // Default to predis (pure PHP) when a KV/Redis URL is present — phpredis
+        // is not compiled into the vercel-php runtime. Falls back to phpredis
+        // locally where the extension may be installed.
+        'client' => env('REDIS_CLIENT', (env('REDIS_URL') || env('KV_URL')) ? 'predis' : 'phpredis'),
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
@@ -156,7 +159,7 @@ return [
         ],
 
         'default' => [
-            'url' => env('REDIS_URL'),
+            'url' => env('REDIS_URL', env('KV_URL')),
             'host' => env('REDIS_HOST', '127.0.0.1'),
             'username' => env('REDIS_USERNAME'),
             'password' => env('REDIS_PASSWORD'),
@@ -169,7 +172,7 @@ return [
         ],
 
         'cache' => [
-            'url' => env('REDIS_URL'),
+            'url' => env('REDIS_URL', env('KV_URL')),
             'host' => env('REDIS_HOST', '127.0.0.1'),
             'username' => env('REDIS_USERNAME'),
             'password' => env('REDIS_PASSWORD'),
