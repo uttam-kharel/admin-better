@@ -153,18 +153,18 @@ new class extends Component
                         View analytics @svg('lucide-arrow-right', 'h-3 w-3')
                     </a>
                 </div>
-                <div class="flex items-end gap-1.5 h-32">
-                    @php $max = max(1, $chartDays->max('total')); @endphp
-                    @foreach($chartDays as $bar)
-                        <div class="flex-1 flex flex-col items-center gap-1 min-w-0" title="{{ $bar['day'] }} — {{ $bar['total'] }} visits">
-                            <div class="w-full rounded-t bg-primary/70 group-hover:bg-primary transition-colors" style="height: {{ max(2, round($bar['total'] / $max * 100)) }}%"></div>
-                        </div>
-                    @endforeach
-                </div>
-                <div class="flex gap-1.5 mt-1.5">
-                    @foreach($chartDays as $bar)
-                        <div class="flex-1 text-center text-[9px] text-muted-foreground min-w-0">{{ \Carbon\Carbon::parse($bar['day'])->format('d/m') }}</div>
-                    @endforeach
+                <div
+                    x-data="{
+                        labels: @js($chartDays->pluck('day')->map(fn ($b) => \Carbon\Carbon::parse($b)->format('d M'))->values()),
+                        values: @js($chartDays->pluck('total')->values()),
+                        init() { AdminCharts.renderLineChart(this.$refs.canvas, this.labels, this.values); },
+                        destroy() { AdminCharts.destroyChart(this.$refs.canvas); },
+                    }"
+                    wire:key="dash-traffic-chart"
+                >
+                    <div class="h-56">
+                        <canvas x-ref="canvas"></canvas>
+                    </div>
                 </div>
             </x-ui.card>
 
@@ -238,21 +238,23 @@ new class extends Component
 
             <x-ui.card padding="none" class="overflow-hidden">
                 <div class="px-5 py-4 border-b border-border">
-                    <h3 class="font-semibold text-sm">Devices &amp; browsers</h3>
+                    <h3 class="font-semibold text-sm">Devices</h3>
                 </div>
-                <div class="px-5 py-4 space-y-4">
-                    @foreach($deviceSplit as $device)
-                        <div>
-                            <div class="flex justify-between text-xs mb-1">
-                                <span class="capitalize text-muted-foreground">{{ $device->device }}</span>
-                                <span class="tabular-nums">{{ $device->total }}</span>
-                            </div>
-                            <div class="h-1.5 rounded-full bg-muted overflow-hidden">
-                                <div class="h-full rounded-full bg-primary" style="width: {{ $traffic['total'] ? round($device->total / max(1,$traffic['total']) * 100) : 0 }}%"></div>
-                            </div>
+                <div class="px-5 py-4">
+                    <div
+                    x-data="{
+                        labels: @js($deviceSplit->pluck('device')->map(fn ($d) => ucfirst($d))->values()),
+                        values: @js($deviceSplit->pluck('total')->values()),
+                        init() { AdminCharts.renderDoughnut(this.$refs.canvas, this.labels, this.values); },
+                        destroy() { AdminCharts.destroyChart(this.$refs.canvas); },
+                    }"
+                        wire:key="dash-devices-chart"
+                    >
+                        <div class="h-44">
+                            <canvas x-ref="canvas"></canvas>
                         </div>
-                    @endforeach
-                    <div class="pt-2 border-t border-border space-y-1.5">
+                    </div>
+                    <div class="pt-3 mt-3 border-t border-border space-y-1.5">
                         @foreach($browserSplit->take(4) as $browser)
                             <div class="flex justify-between text-xs">
                                 <span class="text-muted-foreground">{{ $browser->browser }}</span>

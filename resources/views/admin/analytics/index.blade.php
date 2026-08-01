@@ -132,36 +132,46 @@ new class extends Component
     </div>
 
     <x-ui.card>
-        <h3 class="font-semibold text-sm mb-4">Visits per day</h3>
-        <div class="flex items-end gap-1 h-36">
-            @php $max = max(1, $chart->max('total')); @endphp
-            @foreach($chart as $bar)
-                <div class="flex-1 flex flex-col items-center justify-end gap-1 min-w-0 h-full" title="{{ $bar['day'] }} — {{ $bar['total'] }} visits">
-                    <span class="text-[9px] text-muted-foreground tabular-nums">{{ $bar['total'] ?: '' }}</span>
-                    <div class="w-full rounded-t bg-primary/70 hover:bg-primary transition-colors" style="height: {{ max(2, round($bar['total'] / $max * 100)) }}%"></div>
-                </div>
-            @endforeach
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-sm">Visits per day</h3>
+            <span class="text-xs text-muted-foreground">Line chart</span>
         </div>
-        <div class="flex gap-1 mt-1.5">
-            @foreach($chart as $bar)
-                <div class="flex-1 text-center text-[9px] text-muted-foreground min-w-0">{{ \Carbon\Carbon::parse($bar['day'])->format('d/m') }}</div>
-            @endforeach
+        <div
+            x-data="{
+                labels: @js($chart->pluck('day')->map(fn ($b) => \Carbon\Carbon::parse($b)->format('d M'))->values()),
+                values: @js($chart->pluck('total')->values()),
+                init() { AdminCharts.renderLineChart(this.$refs.canvas, this.labels, this.values); },
+                destroy() { AdminCharts.destroyChart(this.$refs.canvas); },
+            }"
+            wire:key="ana-daily-{{ $days }}"
+        >
+            <div class="h-64">
+                <canvas x-ref="canvas"></canvas>
+            </div>
         </div>
     </x-ui.card>
 
     <div class="grid lg:grid-cols-3 gap-4">
         <x-ui.card padding="none" class="overflow-hidden">
-            <div class="px-5 py-4 border-b border-border">
+            <div class="px-5 py-4 border-b border-border flex items-center justify-between">
                 <h3 class="font-semibold text-sm">Top pages</h3>
+                <span class="text-xs text-muted-foreground">Bar chart</span>
             </div>
-            <ul class="divide-y divide-border">
-                @foreach($topPages as $page)
-                    <li class="px-5 py-3 flex items-center justify-between gap-3 text-sm">
-                        <span class="font-medium truncate">{{ $page->path }}</span>
-                        <span class="text-xs text-muted-foreground tabular-nums shrink-0">{{ $page->total }}</span>
-                    </li>
-                @endforeach
-            </ul>
+            <div class="px-5 py-4">
+                <div
+                    x-data="{
+                        labels: @js($topPages->pluck('path')->values()),
+                        values: @js($topPages->pluck('total')->values()),
+                        init() { AdminCharts.renderBarChart(this.$refs.canvas, this.labels, this.values, { label: 'Visits', horizontal: true }); },
+                        destroy() { AdminCharts.destroyChart(this.$refs.canvas); },
+                    }"
+                    wire:key="ana-pages-{{ $days }}"
+                >
+                    <div class="h-56">
+                        <canvas x-ref="canvas"></canvas>
+                    </div>
+                </div>
+            </div>
         </x-ui.card>
 
         <x-ui.card padding="none" class="overflow-hidden">
@@ -183,43 +193,66 @@ new class extends Component
         </x-ui.card>
 
         <div class="space-y-4">
+        <x-ui.card padding="none" class="overflow-hidden">
+            <div class="px-5 py-4 border-b border-border flex items-center justify-between">
+                <h3 class="font-semibold text-sm">By hour of day</h3>
+                <span class="text-xs text-muted-foreground">Bar chart</span>
+            </div>
+            <div class="px-5 py-4">
+                <div
+                    x-data="{
+                        labels: @js(collect(range(0, 23))->map(fn ($h) => str_pad($h, 2, '0', STR_PAD_LEFT))->values()),
+                        values: @js(collect(range(0, 23))->map(fn ($h) => $hourly[$h] ?? 0)->values()),
+                        init() { AdminCharts.renderBarChart(this.$refs.canvas, this.labels, this.values, { label: 'Visits', color: '#14B8A6' }); },
+                        destroy() { AdminCharts.destroyChart(this.$refs.canvas); },
+                    }"
+                    wire:key="ana-hourly-{{ $days }}"
+                >
+                    <div class="h-40">
+                        <canvas x-ref="canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </x-ui.card>
+
             <x-ui.card padding="none" class="overflow-hidden">
                 <div class="px-5 py-4 border-b border-border">
-                    <h3 class="font-semibold text-sm">By hour of day</h3>
+                    <h3 class="font-semibold text-sm">Devices</h3>
                 </div>
-                <div class="px-5 py-4 grid grid-cols-6 gap-2">
-                    @for($h = 0; $h < 24; $h++)
-                        <div class="text-center">
-                            <div class="text-xs tabular-nums font-medium">{{ $hourly[$h] ?? 0 }}</div>
-                            <div class="text-[9px] text-muted-foreground">{{ str_pad($h, 2, '0', STR_PAD_LEFT) }}</div>
+                <div class="px-5 py-4">
+                    <div
+                        x-data="{
+                            labels: @js($deviceSplit->pluck('device')->map(fn ($d) => ucfirst($d))->values()),
+                            values: @js($deviceSplit->pluck('total')->values()),
+                            init() { AdminCharts.renderDoughnut(this.$refs.canvas, this.labels, this.values); },
+                            destroy() { AdminCharts.destroyChart(this.$refs.canvas); },
+                        }"
+                        wire:key="ana-devices-{{ $days }}"
+                    >
+                        <div class="h-44">
+                            <canvas x-ref="canvas"></canvas>
                         </div>
-                    @endfor
+                    </div>
                 </div>
             </x-ui.card>
 
             <x-ui.card padding="none" class="overflow-hidden">
                 <div class="px-5 py-4 border-b border-border">
-                    <h3 class="font-semibold text-sm">Devices &amp; browsers</h3>
+                    <h3 class="font-semibold text-sm">Browsers</h3>
                 </div>
-                <div class="px-5 py-4 space-y-4">
-                    @foreach($deviceSplit as $device)
-                        <div>
-                            <div class="flex justify-between text-xs mb-1">
-                                <span class="capitalize text-muted-foreground">{{ $device->device }}</span>
-                                <span class="tabular-nums">{{ $device->total }}</span>
-                            </div>
-                            <div class="h-1.5 rounded-full bg-muted overflow-hidden">
-                                <div class="h-full rounded-full bg-primary" style="width: {{ $kpis['total'] ? round($device->total / max(1, $kpis['total']) * 100) : 0 }}%"></div>
-                            </div>
+                <div class="px-5 py-4">
+                    <div
+                        x-data="{
+                            labels: @js($browserSplit->pluck('browser')->values()),
+                            values: @js($browserSplit->pluck('total')->values()),
+                            init() { AdminCharts.renderDoughnut(this.$refs.canvas, this.labels, this.values, { colors: ['#14B8A6', '#EAB308', '#DC2626', '#16A34A', '#8B5CF6', '#F97316'] }); },
+                            destroy() { AdminCharts.destroyChart(this.$refs.canvas); },
+                        }"
+                        wire:key="ana-browsers-{{ $days }}"
+                    >
+                        <div class="h-44">
+                            <canvas x-ref="canvas"></canvas>
                         </div>
-                    @endforeach
-                    <div class="pt-2 border-t border-border space-y-1.5">
-                        @foreach($browserSplit as $browser)
-                            <div class="flex justify-between text-xs">
-                                <span class="text-muted-foreground">{{ $browser->browser }}</span>
-                                <span class="tabular-nums">{{ $browser->total }}</span>
-                            </div>
-                        @endforeach
                     </div>
                 </div>
             </x-ui.card>
