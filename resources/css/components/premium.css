@@ -122,9 +122,49 @@ html.js .reveal.in { opacity: 1; transform: none; }
   box-shadow: 0 1px 3px 0 rgb(15 23 42 / 0.06), 0 4px 16px rgb(15 23 42 / 0.06);
 }
 
+/* ---- Nav active underline (slides in from the left) ---- */
+.nav-link { position: relative; }
+.nav-link.is-active::after,
+.nav-link:not(.is-active):hover::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.1rem;
+  height: 2px;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.nav-link.is-active::after,
+.nav-link:not(.is-active):hover::after { transform: scaleX(1); }
+.nav-link:not(.is-active):hover::after { background: color-mix(in oklch, var(--color-primary) 45%, transparent); }
+
+/* ---- Mobile nav active accent ---- */
+.mobile-nav-link { position: relative; }
+.mobile-nav-link.is-active::before {
+  content: "";
+  position: absolute;
+  left: -1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 1.4rem;
+  border-radius: 9999px;
+  background: var(--color-primary);
+}
+@media (min-width: 640px) {
+  .mobile-nav-link.is-active::before { left: -1.5rem; }
+}
+
+/* ---- Reading progress bar ---- */
+.scroll-progress { will-change: transform; }
+
 /* ---- Reduced motion ---- */
 @media (prefers-reduced-motion: reduce) {
   html.js .reveal { opacity: 1; transform: none; }
   .float-card, .emg-pulse, .cta-ring { animation: none; }
-  .card-lift, .btn-lift { transition-duration: 0.01ms; }
+  .card-lift, .btn-lift, .nav-link.is-active::after, .nav-link:not(.is-active):hover::after { transition-duration: 0.01ms; }
 }

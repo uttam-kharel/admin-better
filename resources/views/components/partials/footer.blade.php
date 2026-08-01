@@ -14,11 +14,23 @@ public function render()
         $wellnessMenu = MenuItem::with('children')->where('slug', 'wellness')->first();
         $settings = SiteSetting::first();
 
+        $currentPath = '/' . trim(request()->path(), '/');
+
+        $isActive = function ($url) use ($currentPath) {
+            $url = trim((string) $url, '/');
+            if ($url === '') {
+                return $currentPath === '/';
+            }
+            $prefix = '/' . $url;
+            return $currentPath === $prefix || str_starts_with($currentPath, $prefix . '/');
+        };
+
         return $this->view([
             'patientMenu' => $patientMenu,
             'aboutMenu' => $aboutMenu,
             'wellnessMenu' => $wellnessMenu,
             'settings' => $settings,
+            'isActive' => $isActive,
         ]);
     }
 };
@@ -54,7 +66,14 @@ public function render()
                         <h4 class="text-eyebrow text-secondary mb-5">{{ $col->title }}</h4>
                         <ul class="space-y-3 text-sm">
                             @foreach($col->children as $child)
-                                <li><a href="{{ $child->url ?? '/' }}" wire:navigate class="text-background/70 hover:text-secondary transition-colors">{{ $child->title }}</a></li>
+                                <li>
+                                    @php $childActive = $isActive($child->url); @endphp
+                                    <a href="{{ $child->url ?? '/' }}" wire:navigate @if($childActive) aria-current="page" @endif class="inline-flex items-center gap-2 transition-colors {{ $childActive ? 'text-secondary font-semibold' : 'text-background/70 hover:text-secondary' }}">{{ $child->title }}
+                                        @if($childActive)
+                                            <span class="size-1 rounded-full bg-secondary" aria-hidden="true"></span>
+                                        @endif
+                                    </a>
+                                </li>
                             @endforeach
                         </ul>
                     </div>

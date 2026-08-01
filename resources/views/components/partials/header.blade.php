@@ -13,10 +13,34 @@ public function render()
         $settings = SiteSetting::first();
         $header = $settings?->header ?? [];
 
+        $currentPath = '/' . trim(request()->path(), '/');
+
+        // A menu URL is active when the current path equals it, or is nested under it
+        // (e.g. /services/cardiology keeps /services highlighted).
+        $isActive = function ($url) use ($currentPath) {
+            $url = trim((string) $url, '/');
+            if ($url === '') {
+                return $currentPath === '/';
+            }
+            $prefix = '/' . $url;
+            return $currentPath === $prefix || str_starts_with($currentPath, $prefix . '/');
+        };
+
+        // Parent ids whose children are active — used to auto-expand the mobile accordion.
+        $activeParentIds = $menus
+            ->filter(fn ($m) => $m->children->contains(fn ($c) => $isActive($c->url)))
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+
         return $this->view([
             'menus' => $menus,
             'header' => $header,
             'settings' => $settings,
+            'currentPath' => $currentPath,
+            'isActive' => $isActive,
+            'activeParentIds' => $activeParentIds,
         ]);
     }
 };
@@ -25,7 +49,7 @@ public function render()
 <header
     x-data="{
         mobileOpen: false,
-        openSections: [],
+        openSections: {{ Js::from($activeParentIds) }},
         toggleSection(id) {
             const idx = this.openSections.indexOf(id)
             if (idx > -1) {
@@ -55,7 +79,7 @@ public function render()
     class="site-header sticky top-10 z-40 bg-background/85 backdrop-blur-md border-b border-border transition-[box-shadow,background-color] duration-300"
 >
     <div class="container-page flex h-16 lg:h-20 items-center justify-between gap-4">
-        <a href="/" wire:navigate class="flex items-center gap-2 shrink-0" aria-label="{{ ($header['logo_text'] ?? 'Shubham International') }} home">
+        <a href="/" wire:navigate @if($currentPath === '/') aria-current="page" @endif class="flex items-center gap-2 shrink-0" aria-label="{{ ($header['logo_text'] ?? 'Shubham International') }} home">
             <x-ui.logo size="md" :logo-text="$settings?->logo_text ?? 'S'" :label="$header['logo_text'] ?? 'Shubham International'" />
         </a>
 
@@ -63,6 +87,7 @@ public function render()
             @foreach($menus as $item)
                 @if($item->children && $item->children->count() > 0)
                     @php $isMega = $item->type === 'mega'; @endphp
+                    @php $parentActive = $item->children->contains(fn ($c) => $isActive($c->url)); @endphp
                     <div
                         x-data="{ open: false }"
                         @mouseenter="open = true"
@@ -70,9 +95,10 @@ public function render()
                         class="relative"
                     >
                         <button
-                            class="flex items-center gap-1 px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+                            class="nav-link flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors {{ $parentActive ? 'is-active text-primary' : 'text-foreground/80 hover:text-primary' }}"
                             :aria-expanded="open"
                             aria-haspopup="menu"
+                            @if($parentActive) aria-current="page" @endif
                         >
                             {{ $item->title }}
                             <svg class="h-3.5 w-3.5 transition-transform" :class="open && 'rotate-180'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
@@ -88,11 +114,12 @@ public function render()
                             <div class="rounded-xl bg-popover hairline shadow-elevated p-5 {{ $isMega ? 'w-[640px]' : 'w-64' }} animate-fade-up">
                                 <div class="{{ $isMega ? 'grid grid-cols-2 gap-x-6 gap-y-3' : 'space-y-3' }}">
                                     @foreach($item->children as $child)
+                                        @php $childActive = $isActive($child->url); @endphp
                                         @if($child->type === 'external' && $child->url)
-                                            <a href="{{ $child->url }}" target="_blank" rel="noreferrer" class="block py-2 text-sm text-foreground/80 hover:text-primary transition-colors">{{ $child->title }}</a>
+                                            <a href="{{ $child->url }}" target="_blank" rel="noreferrer" class="block py-2 text-sm transition-colors {{ $childActive ? 'text-primary font-semibold' : 'text-foreground/80 hover:text-primary' }}" @if($childActive) aria-current="page" @endif>{{ $child->title }}</a>
                                         @else
-                                            <a href="{{ $child->url ?? '/' }}" wire:navigate class="block group">
-                                                <div class="font-medium text-sm text-foreground group-hover:text-primary transition-colors">{{ $child->title }}</div>
+                                            <a href="{{ $child->url ?? '/' }}" wire:navigate class="block group" @if($childActive) aria-current="page" @endif>
+                                                <div class="font-medium text-sm transition-colors {{ $childActive ? 'text-primary' : 'text-foreground group-hover:text-primary' }}">{{ $child->title }}</div>
                                                 @if($child->description)
                                                     <div class="text-xs text-muted-foreground mt-0.5">{{ $child->description }}</div>
                                                 @endif
@@ -104,7 +131,8 @@ public function render()
                         </div>
                     </div>
                 @else
-                    <a href="{{ $item->url ?? '/' }}" wire:navigate class="px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary transition-colors">{{ $item->title }}</a>
+                    @php $itemActive = $isActive($item->url); @endphp
+                    <a href="{{ $item->url ?? '/' }}" wire:navigate @if($itemActive) aria-current="page" @endif class="nav-link relative px-3 py-2 text-sm font-medium transition-colors {{ $itemActive ? 'is-active text-primary' : 'text-foreground/80 hover:text-primary' }}">{{ $item->title }}</a>
                 @endif
             @endforeach
         </nav>
@@ -151,11 +179,13 @@ public function render()
                 @foreach($menus as $item)
                     @if($item->children && $item->children->count() > 0)
                         <div>
+                            @php $mobileParentActive = $item->children->contains(fn ($c) => $isActive($c->url)); @endphp
                             <button
                                 type="button"
-                                class="w-full flex items-center justify-between py-4 text-base font-semibold text-foreground"
+                                class="mobile-nav-link w-full flex items-center justify-between py-4 text-base font-semibold transition-colors {{ $mobileParentActive ? 'is-active text-primary' : 'text-foreground' }}"
                                 @click="toggleSection({{ $item->id }})"
                                 :aria-expanded="isOpen({{ $item->id }})"
+                                @if($mobileParentActive) aria-current="page" @endif
                             >
                                 <span>{{ $item->title }}</span>
                                 <svg class="h-5 w-5 text-muted-foreground transition-transform shrink-0" :class="isOpen({{ $item->id }}) && 'rotate-180'" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
@@ -167,7 +197,8 @@ public function render()
                                 <div class="overflow-hidden">
                                     <div class="pb-4 pl-3 space-y-0 border-l-2 border-primary/20 ml-1">
                                         @foreach($item->children as $child)
-                                            <a href="{{ $child->url ?? '/' }}" wire:navigate @click="closeMenu()" class="block pl-4 py-2.5 text-sm text-foreground/80 hover:text-primary transition-colors">
+                                            @php $childActive = $isActive($child->url); @endphp
+                                            <a href="{{ $child->url ?? '/' }}" wire:navigate @click="closeMenu()" @if($childActive) aria-current="page" @endif class="mobile-nav-link block pl-4 py-2.5 text-sm transition-colors {{ $childActive ? 'is-active text-primary font-semibold' : 'text-foreground/80 hover:text-primary' }}">
                                                 <div class="font-medium">{{ $child->title }}</div>
                                                 @if($child->description)
                                                     <div class="text-xs text-muted-foreground mt-0.5">{{ $child->description }}</div>
@@ -179,7 +210,8 @@ public function render()
                             </div>
                         </div>
                     @else
-                        <a href="{{ $item->url ?? '/' }}" wire:navigate @click="closeMenu()" class="flex items-center justify-between py-4 text-base font-semibold text-foreground hover:text-primary transition-colors">{{ $item->title }}</a>
+                        @php $itemActive = $isActive($item->url); @endphp
+                        <a href="{{ $item->url ?? '/' }}" wire:navigate @click="closeMenu()" @if($itemActive) aria-current="page" @endif class="mobile-nav-link flex items-center justify-between py-4 text-base font-semibold transition-colors {{ $itemActive ? 'is-active text-primary' : 'text-foreground hover:text-primary' }}">{{ $item->title }}</a>
                     @endif
                 @endforeach
             </nav>
@@ -192,4 +224,9 @@ public function render()
         </div>
         </template>
     </template>
+
+    {{-- Reading progress bar --}}
+    <div class="scroll-progress-track absolute inset-x-0 bottom-0 h-0.5 overflow-hidden pointer-events-none" aria-hidden="true">
+        <div class="scroll-progress h-full w-full origin-left bg-gradient-to-r from-primary to-secondary" style="transform: scaleX(0)"></div>
+    </div>
 </header>

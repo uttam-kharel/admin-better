@@ -56,6 +56,24 @@ function initHeaderScroll() {
     window.addEventListener('scroll', refreshHeaderScroll, { passive: true });
 }
 
+// Reading progress bar under the header — single global listener, safe across navigations.
+let progressBound = false;
+function refreshScrollProgress() {
+    const bar = document.querySelector('.scroll-progress');
+    if (!bar) return;
+    const doc = document.documentElement;
+    const max = doc.scrollHeight - window.innerHeight;
+    const pct = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
+    bar.style.transform = `scaleX(${pct})`;
+}
+function initScrollProgress() {
+    refreshScrollProgress();
+    if (progressBound) return;
+    progressBound = true;
+    window.addEventListener('scroll', refreshScrollProgress, { passive: true });
+    window.addEventListener('resize', refreshScrollProgress, { passive: true });
+}
+
 function initCounters() {
     const counters = document.querySelectorAll('[data-count]');
     if (!counters.length) return;
@@ -86,6 +104,7 @@ function initCounters() {
 initReveals();
 initCounters();
 initHeaderScroll();
+initScrollProgress();
 
 // Livewire navigate / morph re-runs (register once, avoid duplicates)
 function bindLivewireReinit() {
@@ -93,6 +112,7 @@ function bindLivewireReinit() {
         initReveals();
         initCounters();
         initHeaderScroll();
+        initScrollProgress();
     });
 }
 document.addEventListener('livewire:init', bindLivewireReinit);
