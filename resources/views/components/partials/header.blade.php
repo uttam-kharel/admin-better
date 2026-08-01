@@ -60,6 +60,7 @@ public function render()
             'settings' => $settings,
             'currentPath' => $currentPath,
             'isActive' => $isActive,
+            'isChildActive' => $isChildActive,
             'activeParentIds' => $activeParentIds,
         ]);
     }
