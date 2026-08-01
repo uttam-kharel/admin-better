@@ -16,10 +16,13 @@ jobs:
         uses: actions/checkout@v4
 
       # Skip (not fail) when the FTP secrets aren't configured yet.
-      # Note: `secrets` is NOT allowed in job-level `if`, so the guard
-      # lives on this step where the secrets context is available.
+      # Note: the `secrets` context is NOT available in `if` conditionals
+      # (job- or step-level), so expose them as step env vars and test those.
       - name: Deploy to InfinityFree via FTP
-        if: ${{ secrets.FTP_USERNAME != '' && secrets.FTP_PASSWORD != '' }}
+        if: ${{ env.FTP_USERNAME != '' && env.FTP_PASSWORD != '' }}
+        env:
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ftpupload.net
