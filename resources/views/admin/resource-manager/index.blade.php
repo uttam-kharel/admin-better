@@ -51,6 +51,11 @@ public string $resource;
     public string $sortDir = 'desc';
     public string $bulkStatus = '';
 
+    public bool $confirmDeleteOpen = false;
+    public string $deleteMode = 'bulk'; // 'bulk' | 'single'
+    public string|int|null $deleteId = null;
+    public string $deleteLabel = '';
+
     public function mount(): void
     {
         // Support deep links like /admin/doctors?create=1 (used by dashboard quick actions).
@@ -313,6 +318,49 @@ public string $resource;
     {
         $this->query()->findOrFail($id)->delete();
         session()->flash('message', 'Deleted successfully.');
+    }
+
+    /**
+     * Open the styled delete-confirmation modal for a bulk or single delete.
+     */
+    public function askDelete(string $mode, string|int|null $id = null): void
+    {
+        $this->deleteMode = $mode === 'single' ? 'single' : 'bulk';
+        $this->deleteId = $id;
+        $this->confirmDeleteOpen = true;
+
+        if ($this->deleteMode === 'bulk') {
+            $count = count(array_filter($this->selected));
+            $this->deleteLabel = $count.' selected record'.($count === 1 ? '' : 's');
+
+            return;
+        }
+
+        $item = $this->query()->find($id);
+        if ($item) {
+            $name = data_get($item, 'name') ?? data_get($item, 'title') ?? data_get($item, 'slug') ?? null;
+            $this->deleteLabel = $name ? '"'.\Illuminate\Support\Str::limit((string) $name, 60).'"' : 'this record';
+        } else {
+            $this->deleteLabel = 'this record';
+        }
+    }
+
+    public function confirmDelete(): void
+    {
+        if ($this->deleteMode === 'bulk') {
+            $this->bulkDelete();
+        } else {
+            $this->delete((string) $this->deleteId);
+        }
+
+        $this->confirmDeleteOpen = false;
+    }
+
+    public function closeDelete(): void
+    {
+        $this->confirmDeleteOpen = false;
+        $this->deleteId = null;
+        $this->deleteLabel = '';
     }
 
     public function updatingSearch(): void
@@ -916,7 +964,7 @@ public string $resource;
                 </select>
                 <x-ui.button size="sm" wire:click="bulkUpdateStatus" :disabled="$bulkStatus === ''">Apply</x-ui.button>
             @endif
-            <x-ui.button size="sm" variant="destructive" wire:click="bulkDelete" wire:confirm="Delete {{ count(array_filter($selected)) }} selected record(s)?">
+            <x-ui.button size="sm" variant="destructive" wire:click="askDelete('bulk')">
                 @svg('lucide-trash-2', 'h-3.5 w-3.5')
                 Delete selected
             </x-ui.button>
@@ -1019,7 +1067,7 @@ public string $resource;
                                 <button wire:click="edit(@js($item->getKey()))" class="p-1.5 rounded hover:bg-muted text-foreground/70 hover:text-foreground" aria-label="Edit">
                                     @svg('lucide-pencil', 'h-4 w-4')
                                 </button>
-                                <button wire:click="delete(@js($item->getKey()))" wire:confirm="Delete this record?" class="p-1.5 rounded hover:bg-muted text-foreground/70 hover:text-emergency ml-1" aria-label="Delete">
+                                <button wire:click="askDelete('single', @js($item->getKey()))" class="p-1.5 rounded hover:bg-muted text-foreground/70 hover:text-emergency ml-1" aria-label="Delete">
                                     @svg('lucide-trash-2', 'h-4 w-4')
                                 </button>
                             </td>
@@ -1243,6 +1291,29 @@ public string $resource;
                         </button>
                     </div>
                 </form>
+        </x-ui.modal>
+    @endif
+
+    @if($confirmDeleteOpen)
+        <x-ui.modal max-width="sm" title="Confirm delete" close="closeDelete">
+            <div class="px-6 py-5 space-y-4">
+                <div class="flex gap-3.5">
+                    <div class="size-10 rounded-full bg-emergency/10 text-emergency grid place-items-center shrink-0">
+                        @svg('lucide-trash-2', 'h-5 w-5')
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold">Do you want to delete {{ $deleteLabel }}?</p>
+                        <p class="text-sm text-muted-foreground mt-1">This action cannot be undone.</p>
+                    </div>
+                </div>
+                <div class="pt-1 flex justify-end gap-2">
+                    <x-ui.button variant="outline" wire:click="closeDelete">Cancel</x-ui.button>
+                    <x-ui.button variant="destructive" wire:click="confirmDelete" wire:loading.attr="disabled" wire:target="confirmDelete">
+                        @svg('lucide-trash-2', 'h-4 w-4')
+                        Delete
+                    </x-ui.button>
+                </div>
+            </div>
         </x-ui.modal>
     @endif
 </div>
