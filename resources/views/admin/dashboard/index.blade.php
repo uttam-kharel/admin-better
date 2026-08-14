@@ -90,13 +90,13 @@ new class extends Component
             ->get();
 
         $this->deviceSplit = PageVisit::query()
-            ->selectRaw('COALESCE(device, "unknown") as device, count(*) as total')
+            ->selectRaw("COALESCE(device, 'unknown') as device, count(*) as total")
             ->groupBy('device')
             ->orderByDesc('total')
             ->get();
 
         $this->browserSplit = PageVisit::query()
-            ->selectRaw('COALESCE(browser, "Other") as browser, count(*) as total')
+            ->selectRaw("COALESCE(browser, 'Other') as browser, count(*) as total")
             ->groupBy('browser')
             ->orderByDesc('total')
             ->get();

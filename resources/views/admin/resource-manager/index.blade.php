@@ -35,6 +35,8 @@ use App\Models\AdminUser;
 
 new class extends Component
 {
+    use WithFileUploads;
+
 public string $resource;
     public string $search = '';
     public bool $modalOpen = false;

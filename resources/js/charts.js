@@ -79,6 +79,44 @@ export function renderLineChart(el, labels, data, { label = 'Visits' } = {}) {
     }));
 }
 
+export function renderMultiLineChart(el, labels, datasets, { colors = [COLORS.primary, COLORS.secondary] } = {}) {
+    destroyChart(el);
+    const options = baseOptions();
+    options.plugins.legend = {
+        display: true,
+        position: 'bottom',
+        labels: {
+            color: COLORS.tick,
+            boxWidth: 10,
+            boxHeight: 10,
+            usePointStyle: true,
+            padding: 14,
+            font: { size: 11 },
+        },
+    };
+    charts.set(el, new Chart(el, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: datasets.map((d, i) => ({
+                label: d.label,
+                data: d.data,
+                borderColor: d.color || colors[i % colors.length],
+                backgroundColor: (d.color || colors[i % colors.length]) + '1F',
+                fill: false,
+                tension: 0.35,
+                borderWidth: 2.5,
+                pointRadius: 2.5,
+                pointHoverRadius: 5,
+                pointBackgroundColor: COLORS.surface,
+                pointBorderColor: d.color || colors[i % colors.length],
+                pointBorderWidth: 2,
+            })),
+        },
+        options,
+    }));
+}
+
 export function renderBarChart(el, labels, data, { label = 'Visits', horizontal = false, color = COLORS.primary } = {}) {
     destroyChart(el);
     charts.set(el, new Chart(el, {
@@ -157,4 +195,4 @@ export function renderDoughnut(el, labels, data, { colors = COLORS.palette } = {
     }));
 }
 
-window.AdminCharts = { renderLineChart, renderBarChart, renderDoughnut, destroyChart };
+window.AdminCharts = { renderLineChart, renderMultiLineChart, renderBarChart, renderDoughnut, destroyChart };

@@ -99,6 +99,15 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Neon's DATABASE_URL is a PgBouncer-pooled connection. Server-side
+            // prepared statements get cached per pool slot, so after any schema
+            // change (migrations/column widening) queries throw
+            //   SQLSTATE[0A000]: cached plan must not change result type
+            // Emulating prepares client-side avoids that entirely and is the
+            // standard fix for Laravel + PgBouncer (also see DATABASE-SETUP.md).
+            'options' => extension_loaded('pdo_pgsql') ? [
+                PDO::ATTR_EMULATE_PREPARES => true,
+            ] : [],
         ],
 
         'sqlsrv' => [

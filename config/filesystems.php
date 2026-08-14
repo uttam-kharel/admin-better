@@ -60,6 +60,17 @@ return [
             'report' => false,
         ],
 
+        // Writable scratch space for Livewire's temporary file uploads.
+        // Vercel Functions have a read-only filesystem except /tmp, so the
+        // default 'local' disk (storage/app) would make every image/CV upload
+        // throw a 500. On Vercel sys_get_temp_dir() resolves to /tmp.
+        'livewire-tmp' => [
+            'driver' => 'local',
+            'root' => rtrim(sys_get_temp_dir(), '/\\').'/livewire-tmp',
+            'throw' => false,
+            'report' => false,
+        ],
+
     ],
 
     /*

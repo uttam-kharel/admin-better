@@ -27,4 +27,10 @@ if (!getenv('SESSION_DRIVER'))      putenv('SESSION_DRIVER=cookie');
 if (!getenv('CACHE_STORE'))         putenv('CACHE_STORE=array');
 if (!getenv('QUEUE_CONNECTION'))    putenv('QUEUE_CONNECTION=sync');
 
+// Livewire stages every file upload (images, CVs) in a temp directory before
+// the record is saved. The default 'local' disk writes under storage/app,
+// which is READ-ONLY in Vercel Functions — uploads would 500. Route them to
+// /tmp instead (config/filesystems.php adds the 'livewire-tmp' disk).
+if (!getenv('LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK')) putenv('LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK=livewire-tmp');
+
 require __DIR__.'/../public/index.php';
