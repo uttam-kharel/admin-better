@@ -31,14 +31,16 @@ The browser loads the image from wherever that string points. There is no
 
 ```text
 doctors.photo:
-  14 × https://images.unsplash.com/...   ← hotlinked from Unsplash's CDN
-   1 × data:image/jpeg;base64,...        ← embedded in the DB (an early upload)
-   0 × blob.vercel-storage.com           ← none yet (no token configured)
+  14 × https://images.unsplash.com/...     ← hotlinked from Unsplash's CDN (seeded)
+   1 × data:image/jpeg;base64,...          ← embedded in the DB (an early upload)
+   0 × blob.vercel-storage.com             ← none migrated yet, but Blob is LIVE
 ```
 
-Consequences of hotlinking: if Unsplash removes/renames the photo, the doctor's
-image silently breaks — nothing on your server protects it. The site only *works*
-because those URLs are still alive.
+The Blob store is **configured and verified** (store `sih-hospital-uploads`, token
+set for Production/Preview/Development) — *new* uploads already go to the CDN.
+The 14 Unsplash hotlinks + 1 data-URI row are simply legacy rows not yet
+re-uploaded. Consequences of hotlinking: if Unsplash removes/renames a photo, the
+doctor's image silently breaks — nothing on your server protects it.
 
 ---
 
@@ -55,10 +57,10 @@ Livewire stages it to a temp disk
 Save triggers App\Services\BlobStorage::store($file, 'uploads')
    │
    ├─ BLOB_READ_WRITE_TOKEN configured?   ──YES──► PUT to Vercel Blob CDN
-   │                                           https://blob.vercel-storage.com/uploads/YYYY/MM/xxx-filename
+   │      ✓ live now                        https://blob.vercel-storage.com/uploads/YYYY/MM/xxx-filename
    │                                           public URL saved into the DB column
    │
-   └─ no token (current state)          ──NO───► base64-encode the bytes
+   └─ no token (fallback only)          ──NO───► base64-encode the bytes
                                                  save `data:<mime>;base64,...` INTO the DB row
 ```
 
@@ -101,16 +103,30 @@ a token exists, or into the DB otherwise.
 
 ---
 
-## 6. Enabling Vercel Blob (the one real upgrade)
+## 6. Vercel Blob — status: ✅ LIVE (free tier)
 
-1. **Create a Blob store** — Vercel dashboard → Storage → Create Blob Store
-   (free tier is fine at this scale).
-2. **Copy the token** (`vercel_blob_rw_…`) → Project → Settings →
-   Environment Variables → add `BLOB_READ_WRITE_TOKEN` for **Production** (and
-   Preview if you want uploads in previews too).
-3. That's it — `BlobStorage` reads `config('services.blob.token')` which maps
-   to `BLOB_READ_WRITE_TOKEN`; no code change needed. Every new upload then
-   lands on the CDN with a clean `https://blob.vercel-storage.com/…` URL.
+Already done for this project:
+
+1. **Store created**: `sih-hospital-uploads` (store id `jzMdlwgruYLJXRp5`, region `iad1`, **public** access).
+2. **Token configured**: `BLOB_READ_WRITE_TOKEN` is set for **Production, Preview,
+   and Development** in Vercel, and in the local `.env` (Laravel strips the
+   surrounding quotes on load).
+3. **Verified end-to-end**: a real test upload through `BlobStorage::store()`
+   returned `https://jzmdlwgruyljxrp5.public.blob.vercel-storage.com/test/…`
+   (public 200 fetch), then was deleted. No code change was needed —
+   `BlobStorage` reads `config('services.blob.token')` → `BLOB_READ_WRITE_TOKEN`.
+
+To replicate on a fresh project (the recipe that was used):
+
+```bash
+vercel blob create-store <name> --access public --scope <team> --yes
+# links the store to the project AND writes BLOB_READ_WRITE_TOKEN to .env.local
+# (Production/Preview/Development are all covered by --yes)
+```
+
+> ⚠️ The token is a secret — it lives in Vercel env vars (and the local `.env`),
+> never in a committed file. See `.env.new.database` for the placeholder convention.
+> Deleting the store (`vercel blob delete-store`) invalidates the token.
 
 > ⚠️ The token is a secret — put it in Vercel env vars (and optionally GitHub
 > Actions secrets for CI), never in a committed file. See `.env.new.database`
