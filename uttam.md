@@ -180,66 +180,58 @@ Vercel doesn't natively run PHP, so this repo uses the
 3. **`public/` as the output** — Vercel serves the built assets from `public/`,
    and the PHP function handles every other path.
 
-### The build, step by step
+### Deployment — the official Vercel Git integration
 
-When you push to GitHub, the **CI pipeline** (see section 5) runs:
+Deployment is handled by **Vercel's Git integration**, not by CI:
 
-```bash
-composer install --no-interaction --prefer-dist --no-progress   # PHP deps
-npm ci                                                          # JS deps
-npm run build                                                   # Vite → public/build (JS/CSS)
-php artisan migrate --force                                     # schema (only if DATABASE_URL secret set)
-php artisan view:cache                                          # compile all Blade views
-npx vercel --prod --yes                                         # deploy to production
-```
+- The repo is connected to the project in the Vercel dashboard
+  (Project → Settings → Git — or `npx vercel git connect <repo-url>`).
+- **Push to `main`** → Vercel creates the production deployment
+  (`sih-hospital.vercel.app`) automatically.
+- **Pull request** → Vercel creates a preview deployment with its own URL.
 
-Vercel then uploads the project (with `public/build` assets) and spins up the
-PHP function. Environment variables from the Vercel dashboard are injected at
-runtime.
+Vercel uploads the project (respecting `.vercelignore`), builds the
+`api/index.php` PHP function (the vercel-php runtime re-installs Composer deps
+here), serves `public/` assets, and injects the dashboard env vars at runtime.
+The frontend assets are pre-built and committed (`public/build`), so no
+`buildCommand` is needed.
 
 ---
 
-## 5. CI/CD — how GitHub Actions deploys for you
+## 5. CI/CD — what GitHub Actions does
 
-The pipeline lives in **`.github/workflows/deploy-vercel.yml`**. It triggers on:
+The pipeline lives in **`.github/workflows/deploy-vercel.yml`**. It does **not**
+deploy — Vercel's Git integration does that (section 4). Actions only does the
+work Vercel's build image can't (it has no PHP):
 
-| Event | What happens |
+| Step | Why |
 |---|---|
-| Push to `main` | **Production deploy** (`sih-hospital.vercel.app`) |
-| Pull request | **Preview deploy** with a unique URL + PR comment |
-| Manual (`workflow_dispatch`) | Re-deploy production |
+| `composer install` + `npm ci` + `npm run build` | Verify the frontend builds from a clean checkout |
+| **JS bundle budget gate** | Fails if the public bundle exceeds 350KB (keeps Chart.js admin-only) |
+| **Migrate + seed Neon** | `php artisan migrate --force` + `db:seed-if-empty --force` |
+| `view:cache` | Compiles every Blade template (faster cold starts, catches broken views) |
 
 ### Required GitHub secrets
 
 `Settings → Secrets and variables → Actions`:
 
-- `VERCEL_TOKEN` — from https://vercel.com/account/tokens
-- `VERCEL_ORG_ID` — your Vercel team ID (`team_…` from `.vercel/project.json`)
-- `VERCEL_PROJECT_ID` — your project ID (`prj_…` from `.vercel/project.json`)
 - `DATABASE_URL_UNPOOLED` — Neon **direct** connection string. **Required for CI**
   to run migrations/seeders (the pooled URL rejects schema changes).
 - `DATABASE_URL` (optional fallback) — pooled URL, used only if UNPOOLED is unset
 - `APP_KEY` (recommended) — the same key as production so CI encrypts identically;
   if unset, CI generates a throwaway key for migrate/seed only
 
-### What CI does beyond deploying
+> `VERCEL_TOKEN` / `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` are **no longer
+> needed** — deployment is done by the Git integration, so CI runs token-free.
 
-1. **JS bundle budget gate** — fails the build if the public JS bundle exceeds
-   350KB, so nobody accidentally puts Chart.js back into the public entry.
-2. **Migrates + seeds Neon** — `php artisan migrate --force` then
-   `php artisan db:seed-if-empty --force` (skips gracefully if the
-   `DATABASE_URL_UNPOOLED` secret is unset).
+### Seeding (why `db:seed-if-empty`, not `db:seed`)
 
-   **Why `db:seed-if-empty` and not `db:seed`?** The seeders insert rows with
-   explicit IDs, so re-running them on a populated database crashes with
-   duplicate-key errors. `db:seed-if-empty` runs the full `DatabaseSeeder`
-   **only when the database has no content** (`site_settings`/`departments`/
-   `doctors`/`services` all empty) — so a brand-new database gets all demo
-   content on first push, and the live database is never touched again.
-3. **`view:cache`** — compiles every Blade template at build time (faster cold
-   starts + catches broken views before deploy).
-4. **Warms caches** after deploy by hitting `/`, `/services`, `/departments`,
-   `/doctors`, so the first real visitor doesn't pay the cold-cache cost.
+The seeders insert rows with explicit IDs, so re-running them on a populated
+database crashes with duplicate-key errors. `db:seed-if-empty` runs the full
+`DatabaseSeeder` **only when the database has no content**
+(`site_settings`/`departments`/`doctors`/`services` all empty) — so a
+brand-new database gets all demo content on first push, and the live database
+is never touched again.
 
 > Why **not** `config:cache` / `route:cache`? `config:cache` bakes build-time
 > env, and `route:cache` bakes the APP_KEY-derived Livewire update URL — both
@@ -285,19 +277,21 @@ composer run dev    # server + queue + logs + vite in one
 # 1. Login
 npx vercel login
 
-# 2. Link the repo to a Vercel project (creates .vercel/project.json)
-npx vercel link
-#    → answer the prompts; picks up vercel.json automatically
+# 2. Create/link the project
+npx vercel link          # creates .vercel/project.json; picks up vercel.json
 
-# 3. Set the environment variables in the dashboard
+# 3. Connect the GitHub repo — OFFICIAL Git integration (deploys on push/PR)
+npx vercel git connect https://github.com/<you>/<repo>.git
+#    (requires the GitHub login connection on your Vercel account)
+
+# 4. Set the environment variables in the dashboard
 #    (or with the CLI:)
 npx vercel env add DATABASE_URL production
 npx vercel env add DATABASE_URL_UNPOOLED production
 npx vercel env add APP_KEY production
 npx vercel env add BLOB_READ_WRITE_TOKEN production
 
-# 4. Deploy
-npx vercel --prod
+# 5. Push to GitHub — Vercel deploys automatically (no manual deploy needed)
 ```
 
 > Pull the real production env anytime with `npx vercel env pull --environment=production` —
@@ -306,14 +300,14 @@ npx vercel --prod
 ### Replicate CI/CD (new GitHub repo)
 
 1. Push the repo to GitHub.
-2. Add the six secrets from section 5 to the new repo
-   (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`,
-   `DATABASE_URL_UNPOOLED`, `DATABASE_URL`, `APP_KEY`).
+2. Add the three secrets from section 5 to the new repo
+   (`DATABASE_URL_UNPOOLED`, `DATABASE_URL`, `APP_KEY`).
 3. Update `vercel.json` / `.vercel/project.json` for the new Vercel project
    (re-run `npx vercel link`).
-4. Update the hardcoded warm-up URL in `.github/workflows/deploy-vercel.yml`
-   (`https://sih-hospital.vercel.app` → your URL).
-5. Push to `main` — CI deploys production automatically.
+4. Connect the new repo to the new Vercel project (Git integration) —
+   `npx vercel git connect https://github.com/<you>/<repo>.git`.
+5. Push to `main` — Vercel deploys production; Actions runs gates + DB
+   migrate/seed. (In the new repo, drop `VERCEL_TOKEN` if it was copied.)
 
 ---
 

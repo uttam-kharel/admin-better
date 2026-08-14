@@ -1,20 +1,25 @@
-name: Deploy to Vercel
+name: CI — quality gates + database
 
-# CI/CD for the livewire-app (Laravel + Livewire on Vercel).
+# DEPLOYMENT IS DONE BY VERCEL'S OFFICIAL GIT INTEGRATION, not by this
+# workflow. The repo is connected to the project in the Vercel dashboard
+# (Project → Settings → Git), so Vercel itself deploys:
+#   - push to main      → production deployment (sih-hospital.vercel.app)
+#   - pull request      → preview deployment with its own .vercel.app URL
 #
+# This workflow only does the PHP-dependent work that Vercel's build image
+# can't (no PHP there): build the frontend, enforce the JS bundle budget,
+# compile Blade views, and apply migrations + seed to the Neon database.
+# It needs no Vercel token — deployment is triggered natively by GitHub.
+
 # Required GitHub repository secrets (Settings → Secrets and variables → Actions):
-#   VERCEL_TOKEN        – Vercel API token (from https://vercel.com/account/tokens)
-#   VERCEL_ORG_ID       – team_...  (see .vercel/project.json → "orgId")
-#   VERCEL_PROJECT_ID   – prj_...   (see .vercel/project.json → "projectId")
-#
-# Uses the DIRECT vercel deploy command (not the pull/build/prebuilt pipeline),
-# because this project uses the vercel-php custom runtime — the direct command
-# is the proven path for this setup (see .vercelignore note about Composer).
-#
-# Behavior:
-#   - push to main            → production deploy (aliased to v1.sih.com.np)
-#   - pull request            → preview deploy with a unique .vercel.app URL + PR comment
-#   - workflow_dispatch       → manual production re-deploy
+#   DATABASE_URL_UNPOOLED = Neon's DIRECT (non-pooled) connection string.
+#     Required: the pooled PgBouncer proxy rejects schema changes
+#     ("current transaction is aborted") — migrations NEVER work pooled.
+#   DATABASE_URL          = optional fallback if UNPOOLED is missing.
+#   APP_KEY               = same key as production; if unset, CI generates
+#                           a throwaway one (fine for migrate/seed only).
+#   (VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID are no longer needed —
+#    deployment is handled by the Git integration.)
 
 on:
   push:
@@ -24,68 +29,14 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: vercel-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
-  issues: write
-
-env:
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
-  # ── Preview deploy (pull requests) ─────────────────────────────
-  preview:
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install PHP dependencies (needed by Vite to resolve vendor assets)
-        run: composer install --no-interaction --prefer-dist --no-progress
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build frontend assets
-        run: npm run build
-
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: Deploy preview to Vercel
-        id: deploy
-        run: |
-          url="$(npx vercel deploy --yes --token=${{ secrets.VERCEL_TOKEN }} 2>&1 | grep -oE 'https://[a-z0-9-]+\.vercel\.app' | tail -n 1)"
-          echo "url=$url" >> "$GITHUB_OUTPUT"
-          echo "Preview URL: $url"
-
-      - name: Comment preview URL on PR
-        if: success()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const url = '${{ steps.deploy.outputs.url }}';
-            if (!url) return;
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `🚀 **Preview deployment ready:** ${url}`,
-            });
-
-  # ── Production deploy (push to main / manual) ──────────────────
-  production:
-    if: github.event_name != 'pull_request'
+  quality-and-db:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -121,13 +72,6 @@ jobs:
       # when the DATABASE_URL_UNPOOLED secret exists (skips otherwise).
       # NOTE: the secret is referenced in env (not in an if: condition) —
       # referencing an unset secret in if: fails GitHub's workflow validation.
-      # Add the secret in: GitHub repo → Settings → Secrets → Actions.
-      #   DATABASE_URL_UNPOOLED = Neon's DIRECT (non-pooled) connection string.
-      #     Required: the pooled PgBouncer proxy rejects schema changes
-      #     ("current transaction is aborted") — migrations NEVER work pooled.
-      #   DATABASE_URL          = optional fallback if UNPOOLED is missing.
-      #   APP_KEY               = same key as production; if unset, CI generates
-      #                           a throwaway one (fine for migrate/seed only).
       - name: Migrate + seed Neon database
         env:
           DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
@@ -158,19 +102,3 @@ jobs:
       # APP_KEY-derived Livewire update URL, both of which differ on Vercel.)
       - name: Compile Blade views
         run: php artisan view:cache
-
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: Deploy production to Vercel
-        run: npx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
-
-      # Best-effort cache warm-up so the first real visitor doesn't pay the
-      # cold-cache cost (database cache is populated by these requests).
-      - name: Warm production caches
-        continue-on-error: true
-        run: |
-          for p in "/" "/services" "/departments" "/doctors"; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' "https://sih-hospital.vercel.app$p" || true)
-            echo "warm $p -> $code"
-          done
