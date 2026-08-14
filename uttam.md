@@ -71,7 +71,9 @@ api/index.php                          # Vercel PHP entrypoint (boots Laravel)
 public/build/                          # compiled frontend assets (Vite output)
 resources/views/                       # Blade templates (layouts, components, pages)
 resources/js/                          # app.js (public), admin.js (charts), premium.js
-routes/web.php                         # all routes
+routes/web.php                         # public site routes only
+routes/admin.php                       # admin routes (prefix admin, name admin.)
+                                         # loaded from bootstrap/app.php
 vercel.json                            # Vercel config (PHP runtime, rewrites)
 .github/workflows/deploy-vercel.yml    # CI/CD pipeline
 database/migrations/                   # schema (all tables)
