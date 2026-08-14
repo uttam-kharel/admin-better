@@ -1,7 +1,7 @@
 @props([])
 
 @php
-    $setting = \App\Models\SiteSetting::first();
+    $setting = \App\Models\SiteSetting::cached();
     $theme = $setting?->theme ?? [];
 @endphp
 

@@ -280,7 +280,7 @@
     "src": "node_modules/@fontsource/inter/files/inter-vietnamese-800-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-CdtNYjQ1.css",
+    "file": "assets/app-Chp8GJFh.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -288,8 +288,14 @@
       "app.css"
     ]
   },
+  "resources/js/admin.js": {
+    "file": "assets/admin-BbJJkmPo.js",
+    "name": "admin",
+    "src": "resources/js/admin.js",
+    "isEntry": true
+  },
   "resources/js/app.js": {
-    "file": "assets/app-DR7LKtOE.js",
+    "file": "assets/app-Bu30X9-U.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

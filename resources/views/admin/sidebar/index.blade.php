@@ -3,6 +3,7 @@
 use App\Models\Appointment;
 use App\Models\ContactSubmission;
 use App\Models\JobApplication;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 new class extends Component
@@ -10,11 +11,12 @@ new class extends Component
     public function render()
     {
         // Live badges for operational inboxes so staff can spot new work at a glance.
-        $badges = [
+        // Counts are cached briefly (60s) — they are re-read on every admin page load.
+        $badges = Cache::remember('admin_sidebar_badges', 60, fn () => [
             'admin.appointments' => Appointment::where('status', 'pending')->count(),
             'admin.contact-submissions' => ContactSubmission::where('status', 'new')->count(),
             'admin.job-applications' => JobApplication::where('status', 'new')->count(),
-        ];
+        ]);
 
         return $this->view(['badges' => $badges]);
     }

@@ -9,8 +9,8 @@ new class extends Component
 {
 public function render()
     {
-        $menus = MenuItem::with('children')->whereNull('parent_id')->orderBy('order')->get();
-        $settings = SiteSetting::first();
+        $menus = MenuItem::cachedTopLevel();
+        $settings = SiteSetting::cached();
         $header = $settings?->header ?? [];
 
         $currentPath = '/' . trim(request()->path(), '/');

@@ -9,7 +9,7 @@ class ContactIndex extends Component
 {
     public function render()
     {
-        $settings = SiteSetting::first();
+        $settings = SiteSetting::cached();
         $contact = $settings?->contact_page ?? [];
 
         return view('pages.contact.index', [

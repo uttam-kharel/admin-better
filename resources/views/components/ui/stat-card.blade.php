@@ -8,7 +8,7 @@
 
 @php
     $tag = $href ? 'a' : 'div';
-    $interactive = $href ? 'group hover:shadow-card hover:-translate-y-0.5 transition-all' : '';
+    $interactive = $href ? 'group hover:shadow-card hover:-translate-y-0.5 transition-[box-shadow,transform]' : '';
 
     $deltaValue = $delta !== null ? (float) $delta : null;
     $deltaPositive = $deltaValue !== null && $deltaValue > 0;

@@ -8,7 +8,7 @@ new class extends Component
 {
 public function render()
     {
-        $settings = SiteSetting::first();
+        $settings = SiteSetting::cached();
         $topbar = $settings?->topbar ?? [];
 
         return $this->view([

@@ -23,7 +23,7 @@
             <button type="button" aria-label="Close" wire:click="{{ $close }}" class="absolute inset-0 bg-foreground/50 backdrop-blur-sm"></button>
         @endif
     @endif
-    <div class="relative bg-surface rounded-t-2xl sm:rounded-2xl w-full {{ $max }} max-h-[90vh] overflow-hidden flex flex-col shadow-elevated animate-fade-up">
+    <div class="relative bg-surface rounded-t-2xl sm:rounded-2xl w-full {{ $max }} max-h-[90vh] overflow-hidden overscroll-contain flex flex-col shadow-elevated animate-fade-up">
         @if($title)
             <div class="px-6 py-4 border-b border-border flex items-center justify-between shrink-0">
                 <h3 class="font-semibold">{{ $title }}</h3>

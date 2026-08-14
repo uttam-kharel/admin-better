@@ -3,9 +3,27 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class SiteSetting extends Model
 {
+    /** Cache key for the single settings row (read on every page, in several components). */
+    public const CACHE_KEY = 'site_settings';
+
+    /**
+     * The settings row, cached forever and invalidated whenever settings are saved
+     * (see the resource manager's save hook). Saves ~5 queries per page load.
+     */
+    public static function cached(): ?self
+    {
+        return Cache::rememberForever(self::CACHE_KEY, fn () => static::first());
+    }
+
+    public static function flushCache(): void
+    {
+        Cache::forget(self::CACHE_KEY);
+    }
+
     protected $fillable = [
         'site_name',
         'tagline',

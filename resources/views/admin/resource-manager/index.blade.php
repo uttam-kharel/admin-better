@@ -101,6 +101,7 @@ public string $resource;
         $deleted = $this->query()->whereIn($key, $ids)->delete();
         $this->selected = [];
         $this->bulkStatus = '';
+        \Illuminate\Support\Facades\Cache::forget(\App\Livewire\Pages\HomepageIndex::CACHE_KEY);
         session()->flash('message', "{$deleted} record(s) deleted.");
     }
 
@@ -311,12 +312,23 @@ public string $resource;
             session()->flash('message', 'Saved successfully.');
         }
 
+        // Settings and menus are cached for fast page loads — drop the cache when they change.
+        if ($modelClass === \App\Models\SiteSetting::class) {
+            \App\Models\SiteSetting::flushCache();
+        } elseif ($modelClass === \App\Models\MenuItem::class) {
+            \App\Models\MenuItem::flushCache();
+        }
+
+        // Any content change can affect the homepage — refresh its cached sections.
+        \Illuminate\Support\Facades\Cache::forget(\App\Livewire\Pages\HomepageIndex::CACHE_KEY);
+
         $this->closeModal();
     }
 
     public function delete(string|int $id): void
     {
         $this->query()->findOrFail($id)->delete();
+        \Illuminate\Support\Facades\Cache::forget(\App\Livewire\Pages\HomepageIndex::CACHE_KEY);
         session()->flash('message', 'Deleted successfully.');
     }
 
@@ -1287,7 +1299,7 @@ public string $resource;
                             class="px-4 py-2 rounded-md text-sm font-semibold bg-primary text-primary-foreground shadow-card hover:opacity-90 disabled:opacity-60"
                         >
                             <span wire:loading.remove wire:target="save">Save</span>
-                            <span wire:loading wire:target="save">Saving...</span>
+                            <span wire:loading wire:target="save">Saving…</span>
                         </button>
                     </div>
                 </form>

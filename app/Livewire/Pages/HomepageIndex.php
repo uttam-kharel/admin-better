@@ -21,10 +21,13 @@ use App\Models\{
     CmsPage,
     SiteSetting
 };
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class HomepageIndex extends Component
 {
+    /** Cache key for the static homepage content (invalidated on any admin save/delete). */
+    public const CACHE_KEY = 'site_homepage';
     public array $heroSlides = [];
     public array $quickActions = [];
     public array $stats = [];
@@ -52,34 +55,62 @@ class HomepageIndex extends Component
 
     public function mount(): void
     {
-        $this->heroSlides = HeroSlide::orderBy('order')->get()->toArray();
-        $this->quickActions = QuickAction::all()->toArray();
-        $this->stats = Stat::all()->toArray();
-        $this->services = Service::all()->toArray();
-        $this->departments = Department::all()->toArray();
-        $this->doctors = Doctor::take(4)->get()->toArray();
-        $this->packages = HealthPackage::all()->toArray();
-        $this->treatments = Treatment::all()->toArray();
-        $this->technologies = Technology::all()->toArray();
-        $this->testimonials = Testimonial::all()->toArray();
-        $this->stories = PatientStory::all()->toArray();
-        $this->insurance = InsurancePartner::all()->toArray();
-        $this->awards = Award::all()->toArray();
-        $this->blogs = BlogPost::latest()->take(3)->get()->toArray();
-        $this->faqs = Faq::all()->toArray();
-        $this->siteSetting = SiteSetting::first();
+        // All homepage content is static — cache it as one blob (refreshed on any
+        // admin save/delete, with a 1h backstop). Cuts ~17 queries per homepage load.
+        $data = Cache::remember(self::CACHE_KEY, 3600, function () {
+            $pages = [];
+            foreach (['about-us', 'why-choose-us', 'careers'] as $slug) {
+                $page = CmsPage::where('slug', $slug)->first();
+                if ($page) {
+                    $pages[$slug] = $page->toArray();
+                }
+            }
+
+            return [
+                'heroSlides' => HeroSlide::orderBy('order')->get()->toArray(),
+                'quickActions' => QuickAction::all()->toArray(),
+                'stats' => Stat::all()->toArray(),
+                'services' => Service::all()->toArray(),
+                'departments' => Department::all()->toArray(),
+                'doctors' => Doctor::take(4)->get()->toArray(),
+                'packages' => HealthPackage::all()->toArray(),
+                'treatments' => Treatment::all()->toArray(),
+                'technologies' => Technology::all()->toArray(),
+                'testimonials' => Testimonial::all()->toArray(),
+                'stories' => PatientStory::all()->toArray(),
+                'insurance' => InsurancePartner::all()->toArray(),
+                'awards' => Award::all()->toArray(),
+                'blogs' => BlogPost::latest()->take(3)->get()->toArray(),
+                'faqs' => Faq::all()->toArray(),
+                'pages' => $pages,
+            ];
+        });
+
+        $this->heroSlides = $data['heroSlides'];
+        $this->quickActions = $data['quickActions'];
+        $this->stats = $data['stats'];
+        $this->services = $data['services'];
+        $this->departments = $data['departments'];
+        $this->doctors = $data['doctors'];
+        $this->packages = $data['packages'];
+        $this->treatments = $data['treatments'];
+        $this->technologies = $data['technologies'];
+        $this->testimonials = $data['testimonials'];
+        $this->stories = $data['stories'];
+        $this->insurance = $data['insurance'];
+        $this->awards = $data['awards'];
+        $this->blogs = $data['blogs'];
+        $this->faqs = $data['faqs'];
+        $this->aboutPage = $data['pages']['about-us'] ?? null;
+        $this->whyChooseUsPage = $data['pages']['why-choose-us'] ?? null;
+        $this->careerPage = $data['pages']['careers'] ?? null;
+
+        $this->siteSetting = SiteSetting::cached();
         $this->settings = $this->siteSetting?->toArray();
         $this->homeSections = $this->siteSetting?->home_sections ?? [];
         $this->aboutContent = $this->siteSetting?->about ?? [];
         $this->careerStatsContent = $this->siteSetting?->career_stats ?? [];
         $this->heroContent = $this->siteSetting?->hero ?? [];
-
-        foreach (['about-us', 'why-choose-us', 'careers'] as $slug) {
-            $page = CmsPage::where('slug', $slug)->first();
-            if ($page) {
-                $this->{$slug === 'about-us' ? 'aboutPage' : ($slug === 'why-choose-us' ? 'whyChooseUsPage' : 'careerPage')} = $page->toArray();
-            }
-        }
     }
 
     public function render()

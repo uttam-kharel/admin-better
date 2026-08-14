@@ -9,10 +9,11 @@ new class extends Component
 {
 public function render()
     {
-        $patientMenu = MenuItem::with('children')->where('slug', 'patients')->first();
-        $aboutMenu = MenuItem::with('children')->where('slug', 'about')->first();
-        $wellnessMenu = MenuItem::with('children')->where('slug', 'wellness')->first();
-        $settings = SiteSetting::first();
+        $footerMenus = MenuItem::cachedFooter();
+        $patientMenu = $footerMenus->get('patients');
+        $aboutMenu = $footerMenus->get('about');
+        $wellnessMenu = $footerMenus->get('wellness');
+        $settings = SiteSetting::cached();
 
         $currentPath = '/' . trim(request()->path(), '/');
 

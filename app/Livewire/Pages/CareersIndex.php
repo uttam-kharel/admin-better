@@ -78,7 +78,7 @@ class CareersIndex extends Component
             ->orderBy('department')
             ->pluck('department');
 
-        $siteSetting = SiteSetting::first();
+        $siteSetting = SiteSetting::cached();
         $careersContent = $siteSetting?->careers_page ?? [];
 
         return view('pages.careers.index', [

@@ -67,7 +67,7 @@ class AppointmentIndex extends Component
         $departments = Department::all();
         $doctors = $this->departmentSlug ? Doctor::where('department_slug', $this->departmentSlug)->get() : collect();
 
-        $siteSetting = SiteSetting::first();
+        $siteSetting = SiteSetting::cached();
         $sidebar = $siteSetting?->appointment_sidebar ?? [];
 
         return view('pages.appointment.index', [

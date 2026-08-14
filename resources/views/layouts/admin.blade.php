@@ -1,6 +1,8 @@
 <x-partials.base :title="$title ?? 'Admin — Shubham International Hospital'">
     <x-slot:head>
         <meta name="robots" content="noindex, nofollow">
+        {{-- Admin-only JS (Chart.js for analytics) — kept out of the public bundle. --}}
+        @vite('resources/js/admin.js')
     </x-slot:head>
 
     <div class="flex h-dvh overflow-hidden">

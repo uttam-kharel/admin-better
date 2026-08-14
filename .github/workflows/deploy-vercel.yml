@@ -123,6 +123,13 @@ jobs:
           cp .env.example .env
           php artisan migrate --force
 
+      # Compile all Blade templates once at deploy time: faster cold starts and a
+      # build-time check that no view is broken. (Deliberately NOT config/route
+      # caching — config:cache bakes build-time env and route:cache bakes the
+      # APP_KEY-derived Livewire update URL, both of which differ on Vercel.)
+      - name: Compile Blade views
+        run: php artisan view:cache
+
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
