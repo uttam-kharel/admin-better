@@ -6,23 +6,6 @@
         <meta property="og:site_name" content="Shubham International Hospital" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary" />
-
-        {{-- Reveal the page scrollbar only while scrolling, then fade it out after a pause. --}}
-        <script>
-            (function () {
-                var timer = null;
-                var root = document.documentElement;
-                function hide() { root.classList.remove('scrolling'); }
-                function show() {
-                    root.classList.add('scrolling');
-                    clearTimeout(timer);
-                    timer = setTimeout(hide, 600);
-                }
-                window.addEventListener('scroll', show, { passive: true });
-                window.addEventListener('wheel', show, { passive: true });
-                window.addEventListener('touchmove', show, { passive: true });
-            })();
-        </script>
     </x-slot:head>
 
     <div class="flex min-h-dvh flex-col">

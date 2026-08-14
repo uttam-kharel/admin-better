@@ -15,11 +15,8 @@ html { scrollbar-width: thin; scrollbar-color: oklch(0.5 0.02 245 / 0.2) transpa
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
-/* ---- Public site: overlay page scrollbar ---- */
-/* Reserve the gutter so hiding/showing the scrollbar never shifts the layout,
-   then only reveal it while the page is actually scrolling (.scrolling is
-   toggled by a tiny listener in the public layout). */
+/* ---- Public site: page scrollbar fully hidden ---- */
+/* Reserve the gutter so the layout never shifts, but never draw a scrollbar.
+   Scrolling still works normally (wheel, trackpad, keyboard, touch). */
 html.public-site { scrollbar-gutter: stable; scrollbar-width: none; }
 html.public-site::-webkit-scrollbar { display: none; }
-html.public-site.scrolling { scrollbar-width: thin; scrollbar-color: oklch(0.5 0.02 245 / 0.25) transparent; }
-html.public-site.scrolling::-webkit-scrollbar { display: block; }
