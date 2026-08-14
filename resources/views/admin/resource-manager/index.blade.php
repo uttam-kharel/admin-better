@@ -385,6 +385,7 @@ public string $resource;
                 'number' => '',
                 'tags' => '',
                 'json' => $field['placeholder'] ?? "[]",
+                'boolean' => '0',
                 default => $field['default'] ?? '',
             };
         }
@@ -1127,17 +1128,25 @@ public string $resource;
                         @if($field['type'] === 'textarea')
                             <x-form.textarea variant="admin" :label="$field['label']" :required="$field['required']" :hint="$helper" wire:model="form.{{ $name }}" rows="4" placeholder="{{ $field['placeholder'] ?? '' }}" />
                         @elseif($field['type'] === 'select')
-                            <x-form.select variant="admin" :label="$field['label']" :required="$field['required']" :hint="$helper" wire:model="form.{{ $name }}">
-                                <option value="">— Select —</option>
-                                @foreach($field['options'] as $option)
-                                    <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
-                                @endforeach
-                            </x-form.select>
+                            <x-form.select-menu
+                                variant="admin"
+                                :label="$field['label']"
+                                :required="$field['required']"
+                                :hint="$helper"
+                                :model="'form.' . $name"
+                                :value="$form[$name] ?? ''"
+                                :options="$field['options']"
+                                :error="$errors->has('form.' . $name) ? 'Please select a value.' : false"
+                            />
                         @elseif($field['type'] === 'boolean')
-                            <x-form.select variant="admin" :label="$field['label']" :hint="$helper" wire:model="form.{{ $name }}">
-                                <option value="0">No</option>
-                                <option value="1">Yes</option>
-                            </x-form.select>
+                            <x-form.select-menu
+                                variant="admin"
+                                :label="$field['label']"
+                                :hint="$helper"
+                                :model="'form.' . $name"
+                                :value="$form[$name] ?? '0'"
+                                :options="[['value' => '0', 'label' => 'No'], ['value' => '1', 'label' => 'Yes']]"
+                            />
                         @elseif($field['type'] === 'json')
                             <div>
                                 <x-form.label class="mb-1.5" :required="$field['required']">{{ $field['label'] }}</x-form.label>

@@ -6,16 +6,13 @@
                 placeholder="Search by name, expertise…"
                 aria-label="Search doctors"
             />
-            <select
-                wire:model.live="departmentSlug"
-                class="rounded-md bg-surface hairline px-3 py-3 text-sm"
+            <x-form.select-menu
+                :model="'departmentSlug'"
+                :value="$departmentSlug"
+                :options="$departments->map(fn ($d) => ['value' => $d->slug, 'label' => $d->name])->values()->all()"
+                placeholder="All departments"
                 aria-label="Browse department"
-            >
-                <option value="">All departments</option>
-                @foreach($departments as $d)
-                    <option value="{{ $d->slug }}">{{ $d->name }}</option>
-                @endforeach
-            </select>
+            />
         </div>
 
         <div class="mt-6 flex flex-wrap gap-2">

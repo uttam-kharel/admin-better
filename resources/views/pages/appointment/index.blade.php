@@ -46,16 +46,17 @@
                     </label>
 
                     <div class="grid md:grid-cols-2 gap-5">
-                        <label class="block">
-                            <span class="block text-sm font-medium mb-1.5">Department <span class="text-destructive">*</span></span>
-                            <select wire:model.live="departmentSlug" required class="block w-full rounded-md bg-surface border border-input px-3.5 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition @error('departmentSlug') border-destructive @enderror">
-                                <option value="">Select a department</option>
-                                @foreach($departments as $dept)
-                                    <option value="{{ $dept->slug }}">{{ $dept->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('departmentSlug') <span class="block mt-1 text-xs text-destructive">{{ $message }}</span> @enderror
-                        </label>
+                        <div>
+                            <x-form.select-menu
+                                :model="'departmentSlug'"
+                                :value="$departmentSlug"
+                                :options="$departments->map(fn ($d) => ['value' => $d->slug, 'label' => $d->name])->values()->all()"
+                                :label="'Department'"
+                                required
+                                placeholder="Select a department"
+                                :error="$errors->has('departmentSlug') ? $errors->first('departmentSlug') : false"
+                            />
+                        </div>
                         <label class="block">
                             <span class="block text-sm font-medium mb-1.5">Preferred date <span class="text-destructive">*</span></span>
                             <input type="date" wire:model="preferredDate" required class="block w-full rounded-md bg-surface border border-input px-3.5 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition @error('preferredDate') border-destructive @enderror" />

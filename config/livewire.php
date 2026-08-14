@@ -196,7 +196,9 @@ return [
     */
 
     'navigate' => [
-        'show_progress_bar' => true,
+        // The blue bar that flashes at the very top of the viewport (above the
+        // emergency bar and site navigation) during wire:navigate page loads.
+        'show_progress_bar' => false,
         'progress_bar_color' => '#2299dd',
     ],
 
