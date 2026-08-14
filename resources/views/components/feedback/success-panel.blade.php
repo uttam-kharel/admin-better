@@ -3,7 +3,7 @@
     'message' => null,
 ])
 
-<div {{ $attributes->class('rounded-2xl bg-surface hairline p-8 text-center') }}>
+<div role="status" aria-live="polite" {{ $attributes->class('rounded-2xl bg-surface hairline p-8 text-center') }}>
     <div class="size-14 rounded-full bg-secondary-soft text-secondary grid place-items-center mx-auto mb-5">
         @isset($icon)
             {{ $icon }}

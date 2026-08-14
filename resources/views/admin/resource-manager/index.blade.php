@@ -1144,7 +1144,7 @@ public string $resource;
                                 <div>
                                     <span class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{{ $field['label'] }}</span>
                                     <div class="mt-1">
-                                        <img src="{{ $this->displayUrl($val) }}" class="h-20 w-20 rounded-lg object-cover border border-border" />
+                                        <img src="{{ $this->displayUrl($val) }}" alt="" class="h-20 w-20 rounded-lg object-cover border border-border" />
                                     </div>
                                 </div>
                             @elseif($field['type'] === 'url' && $val)
@@ -1234,9 +1234,9 @@ public string $resource;
                                 @if($existingImage || $tempUpload)
                                     <div class="mb-2">
                                         @if($tempUpload)
-                                            <img src="{{ $tempUpload->temporaryUrl() }}" class="h-24 w-24 rounded-lg object-cover border border-border" />
+                                            <img src="{{ $tempUpload->temporaryUrl() }}" alt="Upload preview" class="h-24 w-24 rounded-lg object-cover border border-border" />
                                         @else
-                                            <img src="{{ $this->displayUrl($existingImage) }}" class="h-24 w-24 rounded-lg object-cover border border-border" />
+                                            <img src="{{ $this->displayUrl($existingImage) }}" alt="Current image" class="h-24 w-24 rounded-lg object-cover border border-border" />
                                         @endif
                                     </div>
                                 @endif

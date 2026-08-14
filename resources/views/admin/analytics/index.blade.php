@@ -344,9 +344,9 @@ new class extends Component
 
             <form wire:submit="applyCustomRange" class="flex items-center gap-2 rounded-lg bg-surface border border-border px-2 py-1">
                 <span class="text-xs text-muted-foreground pl-1">Custom</span>
-                <input type="date" wire:model="from" class="bg-transparent text-xs text-foreground focus:outline-none [color-scheme:light]" />
+                <input type="date" wire:model="from" class="bg-transparent text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 rounded [color-scheme:light]" />
                 <span class="text-xs text-muted-foreground">–</span>
-                <input type="date" wire:model="to" class="bg-transparent text-xs text-foreground focus:outline-none [color-scheme:light]" />
+                <input type="date" wire:model="to" class="bg-transparent text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 rounded [color-scheme:light]" />
                 <button type="submit" class="px-2 py-1 rounded-md text-xs font-semibold text-primary hover:bg-primary/10">Apply</button>
             </form>
 

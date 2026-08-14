@@ -62,18 +62,18 @@
                         <p class="text-xs text-muted-foreground mb-5">Fill out the form below and we'll be in touch.</p>
                         <form wire:submit="submit" class="space-y-4">
                             <div>
-                                <label class="block text-xs font-semibold text-foreground/80 mb-1.5">Full name <span class="text-emergency">*</span></label>
-                                <input type="text" wire:model="name" class="w-full px-3 py-2.5 text-sm rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="John Doe" />
+                                <label for="career-name" class="block text-xs font-semibold text-foreground/80 mb-1.5">Full name <span class="text-emergency">*</span></label>
+                                <input id="career-name" type="text" wire:model="name" autocomplete="name" class="w-full px-3 py-2.5 text-sm rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="John Doe" />
                                 @error('name') <p class="text-xs text-emergency mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-foreground/80 mb-1.5">Email <span class="text-emergency">*</span></label>
-                                <input type="email" wire:model="email" class="w-full px-3 py-2.5 text-sm rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="john@example.com" />
+                                <label for="career-email" class="block text-xs font-semibold text-foreground/80 mb-1.5">Email <span class="text-emergency">*</span></label>
+                                <input id="career-email" type="email" wire:model="email" autocomplete="email" class="w-full px-3 py-2.5 text-sm rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="john@example.com" />
                                 @error('email') <p class="text-xs text-emergency mt-1">{{ $message }}</p> @enderror
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-foreground/80 mb-1.5">Phone</label>
-                                <input type="tel" wire:model="phone" class="w-full px-3 py-2.5 text-sm rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="+977-98..." />
+                                <label for="career-phone" class="block text-xs font-semibold text-foreground/80 mb-1.5">Phone</label>
+                                <input id="career-phone" type="tel" wire:model="phone" autocomplete="tel" class="w-full px-3 py-2.5 text-sm rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="+977-98…" />
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-foreground/80 mb-1.5">Upload CV <span class="text-muted-foreground font-normal">(PDF or Word, up to 10MB)</span></label>
@@ -82,7 +82,7 @@
                                         @svg('lucide-download', 'h-5 w-5')
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <span class="text-sm font-medium text-foreground" x-text="$wire.resume ? $wire.resume : 'Choose a file...'">Choose a file...</span>
+                                        <span class="text-sm font-medium text-foreground" x-text="$wire.resume ? $wire.resume : 'Choose a file…'">Choose a file…</span>
                                         <p class="text-xs text-muted-foreground truncate" x-show="$wire.resume" x-text="$wire.resume"></p>
                                     </div>
                                     <input type="file" wire:model="resume" accept=".pdf,.doc,.docx" class="hidden" />
@@ -96,19 +96,19 @@
                                 @error('resume') <p class="text-xs text-emergency mt-1.5">{{ $message }}</p> @enderror
                                 <div wire:loading wire:target="resume" class="flex items-center gap-2 text-xs text-primary mt-1.5">
                                     @svg('lucide-refresh-cw', 'h-3.5 w-3.5 animate-spin')
-                                    Uploading...
+                                    Uploading…
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-foreground/80 mb-1.5">Cover letter / Message</label>
-                                <textarea wire:model="cover_letter" rows="4" class="w-full px-3 py-2.5 text-sm rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Tell us why you're a great fit for this role..."></textarea>
+                                <textarea wire:model="cover_letter" rows="4" class="w-full px-3 py-2.5 text-sm rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" placeholder="Tell us why you're a great fit for this role…"></textarea>
                             </div>
                             <button type="submit" wire:loading.attr="disabled" class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-card hover:opacity-90 transition-opacity disabled:opacity-60">
                                 <span wire:loading.remove wire:target="submit">
                                     @svg('lucide-plus', 'h-4 w-4 inline mr-1')
                                     Submit Application
                                 </span>
-                                <span wire:loading wire:target="submit">Submitting...</span>
+                                <span wire:loading wire:target="submit">Submitting…</span>
                             </button>
                         </form>
                     @endif
