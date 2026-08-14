@@ -123,6 +123,9 @@ DB_CONNECTION=pgsql DATABASE_URL="$DATABASE_URL_UNPOOLED" php artisan migrate --
 
 # Import old SQLite data into Postgres (one-time migration)
 DB_CONNECTION=pgsql DATABASE_URL="$DATABASE_URL_UNPOOLED" php artisan db:import-sqlite-to-pgsql
+
+# Seed ONLY if the database is empty (what CI runs — safe on live DBs)
+DB_CONNECTION=pgsql DATABASE_URL="$DATABASE_URL_UNPOOLED" php artisan db:seed-if-empty --force
 ```
 
 ### Where the secrets live (never commit these)
@@ -211,13 +214,26 @@ The pipeline lives in **`.github/workflows/deploy-vercel.yml`**. It triggers on:
 - `VERCEL_TOKEN` — from https://vercel.com/account/tokens
 - `VERCEL_ORG_ID` — your Vercel team ID (`team_…` from `.vercel/project.json`)
 - `VERCEL_PROJECT_ID` — your project ID (`prj_…` from `.vercel/project.json`)
-- `DATABASE_URL` (optional) — if set, CI also runs migrations
+- `DATABASE_URL_UNPOOLED` — Neon **direct** connection string. **Required for CI**
+  to run migrations/seeders (the pooled URL rejects schema changes).
+- `DATABASE_URL` (optional fallback) — pooled URL, used only if UNPOOLED is unset
+- `APP_KEY` (recommended) — the same key as production so CI encrypts identically;
+  if unset, CI generates a throwaway key for migrate/seed only
 
 ### What CI does beyond deploying
 
 1. **JS bundle budget gate** — fails the build if the public JS bundle exceeds
    350KB, so nobody accidentally puts Chart.js back into the public entry.
-2. **Runs migrations** on Neon (skips gracefully if the secret is unset).
+2. **Migrates + seeds Neon** — `php artisan migrate --force` then
+   `php artisan db:seed-if-empty --force` (skips gracefully if the
+   `DATABASE_URL_UNPOOLED` secret is unset).
+
+   **Why `db:seed-if-empty` and not `db:seed`?** The seeders insert rows with
+   explicit IDs, so re-running them on a populated database crashes with
+   duplicate-key errors. `db:seed-if-empty` runs the full `DatabaseSeeder`
+   **only when the database has no content** (`site_settings`/`departments`/
+   `doctors`/`services` all empty) — so a brand-new database gets all demo
+   content on first push, and the live database is never touched again.
 3. **`view:cache`** — compiles every Blade template at build time (faster cold
    starts + catches broken views before deploy).
 4. **Warms caches** after deploy by hitting `/`, `/services`, `/departments`,
@@ -282,10 +298,15 @@ npx vercel env add BLOB_READ_WRITE_TOKEN production
 npx vercel --prod
 ```
 
+> Pull the real production env anytime with `npx vercel env pull --environment=production` —
+> useful when replicating (gives you the exact APP_KEY + DATABASE_URL values).
+
 ### Replicate CI/CD (new GitHub repo)
 
 1. Push the repo to GitHub.
-2. Add the four secrets from section 5 to the new repo.
+2. Add the six secrets from section 5 to the new repo
+   (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`,
+   `DATABASE_URL_UNPOOLED`, `DATABASE_URL`, `APP_KEY`).
 3. Update `vercel.json` / `.vercel/project.json` for the new Vercel project
    (re-run `npx vercel link`).
 4. Update the hardcoded warm-up URL in `.github/workflows/deploy-vercel.yml`

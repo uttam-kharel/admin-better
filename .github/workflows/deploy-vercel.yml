@@ -117,22 +117,40 @@ jobs:
             exit 1
           fi
 
-      # Optional: apply Laravel migrations to the Neon Postgres database.
-      # Runs ONLY when the DATABASE_URL secret exists (skips otherwise).
+      # Apply schema + seed content on the Neon Postgres database. Runs ONLY
+      # when the DATABASE_URL_UNPOOLED secret exists (skips otherwise).
       # NOTE: the secret is referenced in env (not in an if: condition) —
       # referencing an unset secret in if: fails GitHub's workflow validation.
       # Add the secret in: GitHub repo → Settings → Secrets → Actions.
-      - name: Run migrations on Neon (skips when DATABASE_URL secret unset)
+      #   DATABASE_URL_UNPOOLED = Neon's DIRECT (non-pooled) connection string.
+      #     Required: the pooled PgBouncer proxy rejects schema changes
+      #     ("current transaction is aborted") — migrations NEVER work pooled.
+      #   DATABASE_URL          = optional fallback if UNPOOLED is missing.
+      #   APP_KEY               = same key as production; if unset, CI generates
+      #                           a throwaway one (fine for migrate/seed only).
+      - name: Migrate + seed Neon database
         env:
+          DATABASE_URL_UNPOOLED: ${{ secrets.DATABASE_URL_UNPOOLED }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          APP_KEY: ${{ secrets.APP_KEY }}
           DB_CONNECTION: pgsql
         run: |
-          if [ -z "$DATABASE_URL" ]; then
-            echo "DATABASE_URL secret not set — skipping Neon migrations."
+          DB_URL="${DATABASE_URL_UNPOOLED:-$DATABASE_URL}"
+          if [ -z "$DB_URL" ]; then
+            echo "DATABASE_URL_UNPOOLED secret not set — skipping Neon migrate/seed."
             exit 0
           fi
           cp .env.example .env
-          php artisan migrate --force
+          if [ -n "$APP_KEY" ]; then
+            sed -i "s|^APP_KEY=.*|APP_KEY=${APP_KEY}|" .env
+            echo "Using APP_KEY from GitHub secret."
+          else
+            php artisan key:generate --force
+          fi
+          DATABASE_URL="$DB_URL" php artisan migrate --force
+          # Seeds ONLY when the database is empty — safe on an existing live DB
+          # (seeders insert with explicit IDs, so re-seeding would crash/duplicate).
+          DATABASE_URL="$DB_URL" php artisan db:seed-if-empty --force
 
       # Compile all Blade templates once at deploy time: faster cold starts and a
       # build-time check that no view is broken. (Deliberately NOT config/route
