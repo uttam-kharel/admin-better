@@ -78,6 +78,28 @@
         </section>
         @break
 
+    @case('faq')
+        <x-sections.faq-accordion
+            :faqs="$d['items'] ?? $d['faqs'] ?? []"
+            :eyebrow="$d['eyebrow'] ?? null"
+            :title="$d['title'] ?? 'Frequently Asked Questions'"
+            :subtitle="$d['subtitle'] ?? null"
+        />
+        @break
+
+    @case('stats')
+        <section class="bg-foreground text-background section-y">
+            <div class="container-page grid grid-cols-2 lg:grid-cols-4 gap-10">
+                @foreach(($d['items'] ?? []) as $stat)
+                    <div class="text-center">
+                        <p class="text-4xl md:text-5xl font-bold tracking-tight">{{ $stat['value'] ?? '' }}</p>
+                        <p class="mt-2 text-xs md:text-sm uppercase tracking-widest text-background/60">{{ $stat['label'] ?? '' }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+        @break
+
     @default
         <section class="container-page section-y">
             <p class="text-muted-foreground">Content block</p>

@@ -154,14 +154,15 @@ public string $resource;
 
     protected function statusBadge(string $status): string
     {
+        // Returns the <x-ui.badge> variant name for a status value.
         return match (strtolower($status)) {
-            'pending' => 'bg-amber-100 text-amber-800',
-            'new' => 'bg-primary-soft text-primary',
-            'confirmed', 'active', 'hired', 'completed', 'offered' => 'bg-emerald-100 text-emerald-800',
-            'responded', 'reviewed', 'interviewed' => 'bg-sky-100 text-sky-800',
-            'cancelled', 'rejected' => 'bg-emergency-soft text-emergency',
-            'archived', 'inactive' => 'bg-muted text-muted-foreground',
-            default => 'bg-muted text-muted-foreground',
+            'pending' => 'warning',
+            'new' => 'primary',
+            'confirmed', 'active', 'hired', 'completed', 'offered' => 'success',
+            'responded', 'reviewed', 'interviewed' => 'info',
+            'cancelled', 'rejected' => 'danger',
+            'archived', 'inactive' => 'neutral',
+            default => 'neutral',
         };
     }
 
@@ -805,7 +806,7 @@ public string $resource;
                     $this->field('contact_page', 'Contact Page', 'json', placeholder: '{"eyebrow":"Contact","title":"We\'re here for you, 24/7","patient_helpline_label":"Patient helpline","patient_helpline":"1-800-123-4567","emergency_label":"Emergency","emergency_phone":"1-800-999-9999","email_label":"Email","email":"care@lumina.health","opd_label":"OPD hours","opd_hours":"Mon\u2013Sat \u00b7 8 AM \u2013 8 PM","location_label":"Main hospital","address":"1500 Medical Plaza, New York, NY 10001","map_placeholder":"Interactive map placeholder"}'),
                     $this->field('appointment_sidebar', 'Appointment Sidebar', 'json', placeholder: '{"call_label":"Call us","helpline":"1-800-123-4567","helpline_note":"24/7 patient helpline","hours_label":"OPD Hours","hours":"Mon\u2013Sat \u00b7 8:00 AM \u2013 8:00 PM","emergency_note":"Emergency 24/7","location_label":"Location","location":"1500 Medical Plaza","location_city":"New York, NY"}'),
                     $this->field('careers_page', 'Careers Page Content', 'json', placeholder: '{"hero_eyebrow":"Careers","hero_title":"Your Career. Our Mission. Together, We Heal.","hero_subtitle":"At Shubham International Hospital...","why_eyebrow":"Why Shubham International","why_title":"More than a workplace. A mission.","why_subtitle":"We offer rich opportunities...","why_items":[{"icon":"users","title":"Collaborative Culture","text":"Work alongside internationally trained specialists..."},{"icon":"edit","title":"Growth & Development","text":"Continuous learning opportunities..."},{"icon":"heart","title":"Comprehensive Benefits","text":"Competitive compensation..."},{"icon":"activity","title":"Impactful Work","text":"Every role contributes to our mission..."}],"contact_eyebrow":"Get in Touch","contact_title":"Have questions about your next career move?","contact_subtitle":"Our HR team is here to help...","contact_phone_label":"Phone","contact_phone":"+977-9809090909","contact_email_label":"Email","contact_email":"careers@shubham.intl","contact_address_label":"Address","contact_address":"Manamaiju, Kathmandu, Nepal","search_placeholder":"Search jobs by title, department, or location\u2026","search_cta":"View All Openings"}'),
-                    $this->field('theme', 'Theme Colors', 'json', placeholder: '{"primary":"oklch(0.38 0.11 250)","primary_foreground":"oklch(0.99 0.003 240)","primary_soft":"oklch(0.95 0.025 250)","secondary":"oklch(0.62 0.10 195)","secondary_foreground":"oklch(0.99 0.003 240)","secondary_soft":"oklch(0.95 0.02 195)","emergency":"oklch(0.55 0.20 17)","emergency_foreground":"oklch(0.99 0.003 240)","emergency_soft":"oklch(0.96 0.03 17)"}', helper: 'Override brand colors using oklch values. Leave empty to use CSS defaults.'),
+                    $this->field('theme', 'Theme Colors', 'json', placeholder: '{"primary":"oklch(0.38 0.11 250)","primary_foreground":"oklch(0.99 0.003 240)","primary_soft":"oklch(0.95 0.025 250)","secondary":"oklch(0.62 0.10 195)","secondary_foreground":"oklch(0.99 0.003 240)","secondary_soft":"oklch(0.95 0.02 195)","emergency":"oklch(0.55 0.20 17)","emergency_foreground":"oklch(0.99 0.003 240)","emergency_soft":"oklch(0.96 0.03 17)"}', helper: 'Brand colors shown on both the public site and admin. Any key is optional — leave empty to use CSS defaults. Supported keys: primary/secondary/accent/emergency/success (+ their _foreground and _soft variants), destructive, background, foreground, muted, muted_foreground, border, input, ring, surface, surface_muted, chart_1..chart_5. If a color is set without its _soft variant, the soft wash is derived automatically. Values can be oklch(), hex, or any CSS color.'),
                 ],
             ],
             'admin-users' => [
@@ -975,7 +976,7 @@ public string $resource;
                                 <td class="px-4 py-3 align-top max-w-xs">
                                     @php $val = data_get($item, $col['key']); @endphp
                                     @if($col['key'] === 'status' && $val)
-                                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold {{ $this->statusBadge((string) $val) }}">{{ ucwords(str_replace('-', ' ', (string) $val)) }}</span>
+                                        <x-ui.badge :variant="$this->statusBadge((string) $val)">{{ ucwords(str_replace('-', ' ', (string) $val)) }}</x-ui.badge>
                                     @elseif(($col['type'] ?? 'text') === 'image' && $val)
                                         <div class="flex items-center gap-3">
                                             <div class="size-10 rounded-full overflow-hidden bg-muted shrink-0">
@@ -1037,14 +1038,8 @@ public string $resource;
     </div>
 
     @if($showViewModal && $viewItem)
-        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-            <button type="button" aria-label="Close" wire:click="closeView" class="absolute inset-0 bg-foreground/50 backdrop-blur-sm"></button>
-            <div class="relative bg-surface rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-elevated animate-fade-up">
-                <div class="px-6 py-4 border-b border-border flex items-center justify-between">
-                    <h3 class="font-semibold">{{ rtrim($title, 's') }} Details</h3>
-                    <button type="button" wire:click="closeView" class="text-muted-foreground hover:text-foreground text-sm">Close</button>
-                </div>
-                <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+        <x-ui.modal :title="rtrim($title, 's') . ' Details'" close="closeView">
+            <div class="flex-1 overflow-y-auto px-6 py-5 space-y-5">
                     <div class="grid sm:grid-cols-2 gap-4">
                         @foreach($fields as $field)
                             @php
@@ -1109,20 +1104,13 @@ public string $resource;
                             @endif
                         </div>
                     @endif
-                </div>
             </div>
-        </div>
+        </x-ui.modal>
     @endif
 
     @if($modalOpen)
-        <div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-            <button type="button" aria-label="Close" wire:click="closeModal" class="absolute inset-0 bg-foreground/50 backdrop-blur-sm"></button>
-            <div class="relative bg-surface rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-elevated animate-fade-up">
-                <div class="px-6 py-4 border-b border-border flex items-center justify-between">
-                    <h3 class="font-semibold">{{ $modalTitle }}</h3>
-                    <button type="button" wire:click="closeModal" class="text-muted-foreground hover:text-foreground text-sm">Close</button>
-                </div>
-                <form wire:submit="save" class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+        <x-ui.modal :title="$modalTitle" close="closeModal">
+            <form wire:submit="save" class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
                     @if($errors->any())
                         <div class="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
                             <p class="font-semibold mb-1">Please fix the following:</p>
@@ -1242,7 +1230,6 @@ public string $resource;
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </x-ui.modal>
     @endif
 </div>

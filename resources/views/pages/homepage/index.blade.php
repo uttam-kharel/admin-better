@@ -499,63 +499,21 @@
     @endif
 
     {{-- ============ 18. FAQ ============ --}}
-    @if(!empty($faqs))
-        <section class="container-page section-y" x-data="{ open: {{ $faqs[0]['id'] ?? 'null' }} }">
-            <div class="grid lg:grid-cols-12 gap-12">
-                <div class="lg:col-span-4">
-                    <p class="text-eyebrow mb-3">{{ $homeSections['faq_eyebrow'] ?? 'Patient FAQs' }}</p>
-                    <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-balance">{{ $homeSections['faq_title'] ?? 'Answers to the questions we hear most.' }}</h2>
-                    <p class="mt-4 text-muted-foreground leading-relaxed">{{ $homeSections['faq_subtitle'] ?? "Can't find what you're looking for? Our patient liaison team is available 24/7." }}</p>
-                </div>
-                <div class="lg:col-span-8 divide-y divide-border">
-                    @foreach($faqs as $faq)
-                        <div class="py-2">
-                            <button type="button" class="w-full flex items-center justify-between gap-4 py-4 text-left" @click="open = open === {{ $faq['id'] }} ? null : {{ $faq['id'] }}" :aria-expanded="open === {{ $faq['id'] }}">
-                                <span class="font-semibold pr-4">{{ $faq['question'] }}</span>
-                                <template x-if="open === {{ $faq['id'] }}">
-                                    @svg('lucide-minus', 'h-5 w-5 shrink-0 text-primary')
-                                </template>
-                                <template x-if="open !== {{ $faq['id'] }}">
-                                    @svg('lucide-plus', 'h-5 w-5 shrink-0 text-muted-foreground')
-                                </template>
-                            </button>
-                            <div x-show="open === {{ $faq['id'] }}" x-collapse>
-                                <p class="pb-5 text-sm text-muted-foreground leading-relaxed pr-10">{{ $faq['answer'] }}</p>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-    @endif
+    <x-sections.faq-accordion
+        :faqs="$faqs"
+        :eyebrow="$homeSections['faq_eyebrow'] ?? 'Patient FAQs'"
+        :title="$homeSections['faq_title'] ?? 'Answers to the questions we hear most.'"
+        :subtitle="$homeSections['faq_subtitle'] ?? \"Can't find what you're looking for? Our patient liaison team is available 24/7.\""
+    />
 
     {{-- ============ 19. CONTACT CTA ============ --}}
-    <section class="container-page pb-20">
-        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0E62B4] via-primary to-[#1890DB] text-primary-foreground p-8 md:p-14 shadow-elevated">
-            <div class="absolute inset-0 pointer-events-none" aria-hidden="true" style="background-image: radial-gradient(rgba(255,255,255,0.12) 1.5px, transparent 1.5px); background-size: 30px 30px;"></div>
-            <div class="relative grid lg:grid-cols-2 gap-8 items-center">
-                <div class="text-center lg:text-left">
-                    <h2 class="text-3xl md:text-4xl font-bold tracking-tight text-balance">Need Medical Assistance Today?</h2>
-                    <p class="mt-3 text-primary-foreground/85 max-w-xl leading-relaxed">
-                        Our care coordinators will match you with the right specialist and confirm your appointment within minutes.
-                    </p>
-                    <a href="tel:{{ $settings['emergency_phone'] ?? '18001234567' }}" class="mt-6 inline-flex items-center gap-3 rounded-full bg-white/15 px-5 py-2.5 font-semibold hover:bg-white/25 transition-colors">
-                        <span class="cta-ring size-9 rounded-full bg-white/20 grid place-items-center" aria-hidden="true">@svg('lucide-phone', 'h-4 w-4')</span>
-                        {{ $settings['emergency_phone'] ?? '+977-1-4234567' }}
-                    </a>
-                </div>
-                <div class="flex flex-col items-center lg:items-end gap-4">
-                    <a href="{{ route('appointment') }}" wire:navigate class="btn-lift inline-flex items-center gap-2 rounded-md bg-surface px-7 py-3.5 text-sm font-semibold text-foreground shadow-lg hover:bg-background">
-                        {{ $homeSections['contact_cta_book_label'] ?? 'Book an Appointment Now' }} @svg('lucide-arrow-right', 'h-4 w-4')
-                    </a>
-                    <span class="inline-flex items-center gap-2 text-xs text-primary-foreground/80">
-                        <span class="emg-pulse" aria-hidden="true"></span> We usually reply within 5 minutes
-                    </span>
-                    <a href="{{ route('contact') }}" wire:navigate class="text-sm font-semibold text-primary-foreground/90 underline underline-offset-2 hover:text-white transition-colors">
-                        {{ $homeSections['contact_cta_contact_label'] ?? 'Contact us' }}
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
+    <x-sections.cta-panel
+        :title="$homeSections['contact_cta_title'] ?? 'Need Medical Assistance Today?'"
+        :subtitle="$homeSections['contact_cta_subtitle'] ?? 'Our care coordinators will match you with the right specialist and confirm your appointment within minutes.'"
+        :phone="$settings['emergency_phone'] ?? '+977-1-4234567'"
+        :book-label="$homeSections['contact_cta_book_label'] ?? 'Book an Appointment Now'"
+        book-url="{{ route('appointment') }}"
+        :contact-label="$homeSections['contact_cta_contact_label'] ?? 'Contact us'"
+        contact-url="{{ route('contact') }}"
+    />
 </div>

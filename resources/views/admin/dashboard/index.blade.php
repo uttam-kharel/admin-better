@@ -263,7 +263,7 @@ new class extends Component
                                     <p class="font-medium truncate">{{ $apt->name }}</p>
                                     <p class="text-xs text-muted-foreground truncate">{{ $apt->department_slug }} &middot; {{ $apt->preferred_date }}</p>
                                 </div>
-                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest {{ $apt->status ? 'bg-amber-100 text-amber-800' : 'bg-muted' }}">{{ $apt->status ?? '—' }}</span>
+                                <x-ui.badge :variant="$apt->status === 'pending' ? 'warning' : 'neutral'">{{ $apt->status ?? '—' }}</x-ui.badge>
                             </li>
                         @endforeach
                     </ul>
@@ -285,7 +285,7 @@ new class extends Component
                             <li class="px-5 py-3 text-sm">
                                 <div class="flex items-center justify-between gap-3">
                                     <p class="font-medium truncate">{{ $app->name }}</p>
-                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest {{ $app->status === 'new' ? 'bg-primary-soft text-primary' : 'bg-muted text-muted-foreground' }}">{{ $app->status }}</span>
+                                    <x-ui.badge :variant="$app->status === 'new' ? 'primary' : 'neutral'">{{ $app->status }}</x-ui.badge>
                                 </div>
                                 <p class="text-xs text-muted-foreground truncate mt-0.5">{{ $app->jobOpening?->title }} &middot; {{ $app->created_at->format('M j') }}</p>
                             </li>
@@ -338,7 +338,7 @@ new class extends Component
                             <li class="px-5 py-3 text-sm">
                                 <div class="flex items-center justify-between gap-3">
                                     <p class="font-medium truncate">{{ $msg->name }}</p>
-                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest {{ ($msg->status ?? '') === 'new' ? 'bg-primary-soft text-primary' : 'bg-muted text-muted-foreground' }}">{{ $msg->status ?? 'unread' }}</span>
+                                    <x-ui.badge :variant="($msg->status ?? '') === 'new' ? 'primary' : 'neutral'">{{ $msg->status ?? 'unread' }}</x-ui.badge>
                                 </div>
                                 <p class="text-xs text-muted-foreground line-clamp-1 mt-0.5">{{ $msg->message }}</p>
                             </li>
