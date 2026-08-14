@@ -1,12 +1,22 @@
 <?php
 
+use App\Models\Appointment;
+use App\Models\ContactSubmission;
+use App\Models\JobApplication;
 use Livewire\Component;
 
 new class extends Component
 {
-public function render()
+    public function render()
     {
-        return $this->view();
+        // Live badges for operational inboxes so staff can spot new work at a glance.
+        $badges = [
+            'admin.appointments' => Appointment::where('status', 'pending')->count(),
+            'admin.contact-submissions' => ContactSubmission::where('status', 'new')->count(),
+            'admin.job-applications' => JobApplication::where('status', 'new')->count(),
+        ];
+
+        return $this->view(['badges' => $badges]);
     }
 };
 
@@ -95,6 +105,9 @@ public function render()
                            class="flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors {{ $isActive ? 'bg-primary text-primary-foreground font-semibold' : 'text-foreground/70 hover:bg-muted hover:text-foreground' }}">
                             @svg('lucide-' . $item['icon'], 'h-4 w-4 shrink-0')
                             <span class="truncate">{{ $item['label'] }}</span>
+                            @if(($badges[$item['route']] ?? 0) > 0)
+                                <span class="ml-auto inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-[10px] font-bold tabular-nums {{ $isActive ? 'bg-primary-foreground/20 text-primary-foreground' : 'bg-emergency text-emergency-foreground' }}">{{ $badges[$item['route']] }}</span>
+                            @endif
                         </a>
                     @endforeach
                 </div>

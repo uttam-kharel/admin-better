@@ -17,7 +17,10 @@ use App\Models\AdminUser;
 
 
 new class extends Component
-{    public array $tiles = [];
+{
+    public array $tiles = [];
+    public array $attention = [];
+    public array $quickActions = [];
     public $recentAppointments;
     public $recentContacts;
     public $recentApplicants;
@@ -55,6 +58,34 @@ new class extends Component
             ['url' => route('admin.job-applications'), 'icon' => 'lucide-file-text', 'count' => $counts['jobApplications'], 'label' => 'Applications'],
             ['url' => route('admin.appointments'), 'icon' => 'lucide-calendar-check', 'count' => $counts['appointments'], 'label' => 'Appointments'],
             ['url' => route('admin.contact-submissions'), 'icon' => 'lucide-inbox', 'count' => $counts['contactSubmissions'], 'label' => 'Contact Inbox'],
+        ];
+
+        $this->attention = [
+            [
+                'label' => 'Pending appointments',
+                'count' => Appointment::where('status', 'pending')->count(),
+                'url' => route('admin.appointments'),
+                'icon' => 'lucide-calendar-clock',
+            ],
+            [
+                'label' => 'New contact messages',
+                'count' => ContactSubmission::where('status', 'new')->count(),
+                'url' => route('admin.contact-submissions'),
+                'icon' => 'lucide-mail',
+            ],
+            [
+                'label' => 'New job applications',
+                'count' => JobApplication::where('status', 'new')->count(),
+                'url' => route('admin.job-applications'),
+                'icon' => 'lucide-user-plus',
+            ],
+        ];
+
+        $this->quickActions = [
+            ['label' => 'Add doctor', 'url' => route('admin.doctors', ['create' => 1]), 'icon' => 'lucide-stethoscope'],
+            ['label' => 'New department', 'url' => route('admin.departments', ['create' => 1]), 'icon' => 'lucide-building-2'],
+            ['label' => 'Write blog', 'url' => route('admin.blogs', ['create' => 1]), 'icon' => 'lucide-newspaper'],
+            ['label' => 'New job opening', 'url' => route('admin.job-openings', ['create' => 1]), 'icon' => 'lucide-briefcase'],
         ];
 
         $this->recentAppointments = Appointment::latest()->take(5)->get();
@@ -117,6 +148,33 @@ new class extends Component
         <div>
             <h2 class="text-2xl font-bold tracking-tight">Overview</h2>
             <p class="text-sm text-muted-foreground mt-1">All site content and operations at a glance.</p>
+        </div>
+
+        @if(collect($attention)->sum('count') > 0)
+            <div class="grid sm:grid-cols-3 gap-3 md:gap-4">
+                @foreach($attention as $item)
+                    <a href="{{ $item['url'] }}" class="group flex items-center gap-4 rounded-xl border border-emergency/20 bg-emergency-soft/60 px-5 py-4 transition-colors hover:border-emergency/40 hover:bg-emergency-soft">
+                        <div class="size-11 rounded-lg bg-emergency text-emergency-foreground grid place-items-center shrink-0">
+                            @svg($item['icon'], 'h-5 w-5')
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-2xl font-bold leading-tight tabular-nums">{{ $item['count'] }}</p>
+                            <p class="text-xs text-muted-foreground truncate group-hover:text-foreground">{{ $item['label'] }}</p>
+                        </div>
+                        @svg('lucide-arrow-right', 'h-4 w-4 ml-auto shrink-0 text-muted-foreground group-hover:text-emergency')
+                    </a>
+                @endforeach
+            </div>
+        @endif
+
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-semibold uppercase tracking-widest text-muted-foreground mr-1">Quick add</span>
+            @foreach($quickActions as $action)
+                <a href="{{ $action['url'] }}" class="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground/80 hover:border-primary/40 hover:text-primary transition-colors">
+                    @svg($action['icon'], 'h-3.5 w-3.5')
+                    {{ $action['label'] }}
+                </a>
+            @endforeach
         </div>
 
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
@@ -205,7 +263,7 @@ new class extends Component
                                     <p class="font-medium truncate">{{ $apt->name }}</p>
                                     <p class="text-xs text-muted-foreground truncate">{{ $apt->department_slug }} &middot; {{ $apt->preferred_date }}</p>
                                 </div>
-                                <span class="text-[10px] uppercase tracking-widest font-semibold px-2 py-0.5 rounded bg-muted">{{ $apt->status }}</span>
+                                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest {{ $apt->status ? 'bg-amber-100 text-amber-800' : 'bg-muted' }}">{{ $apt->status ?? '—' }}</span>
                             </li>
                         @endforeach
                     </ul>
@@ -227,7 +285,7 @@ new class extends Component
                             <li class="px-5 py-3 text-sm">
                                 <div class="flex items-center justify-between gap-3">
                                     <p class="font-medium truncate">{{ $app->name }}</p>
-                                    <span class="text-[10px] uppercase tracking-widest font-semibold px-2 py-0.5 rounded bg-muted">{{ $app->status }}</span>
+                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest {{ $app->status === 'new' ? 'bg-primary-soft text-primary' : 'bg-muted text-muted-foreground' }}">{{ $app->status }}</span>
                                 </div>
                                 <p class="text-xs text-muted-foreground truncate mt-0.5">{{ $app->jobOpening?->title }} &middot; {{ $app->created_at->format('M j') }}</p>
                             </li>
@@ -280,7 +338,7 @@ new class extends Component
                             <li class="px-5 py-3 text-sm">
                                 <div class="flex items-center justify-between gap-3">
                                     <p class="font-medium truncate">{{ $msg->name }}</p>
-                                    <span class="text-[10px] uppercase tracking-widest font-semibold px-2 py-0.5 rounded bg-muted">{{ $msg->status ?? 'unread' }}</span>
+                                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-widest {{ ($msg->status ?? '') === 'new' ? 'bg-primary-soft text-primary' : 'bg-muted text-muted-foreground' }}">{{ $msg->status ?? 'unread' }}</span>
                                 </div>
                                 <p class="text-xs text-muted-foreground line-clamp-1 mt-0.5">{{ $msg->message }}</p>
                             </li>

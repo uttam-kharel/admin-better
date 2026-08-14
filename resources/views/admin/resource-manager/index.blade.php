@@ -36,6 +36,7 @@ use App\Models\AdminUser;
 new class extends Component
 {
     use WithFileUploads;
+    use WithPagination;
 
 public string $resource;
     public string $search = '';
@@ -45,6 +46,155 @@ public string $resource;
     public array $form = [];
     public bool $showViewModal = false;
     public $viewItem = null;
+    public array $selected = [];
+    public ?string $sortKey = null;
+    public string $sortDir = 'desc';
+    public string $bulkStatus = '';
+
+    public function mount(): void
+    {
+        // Support deep links like /admin/doctors?create=1 (used by dashboard quick actions).
+        if (request()->query('create') === '1') {
+            $this->create();
+        }
+    }
+
+    public function sortBy(string $key): void
+    {
+        if ($this->sortKey === $key) {
+            $this->sortDir = $this->sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortKey = $key;
+            $this->sortDir = 'asc';
+        }
+    }
+
+    public function toggleSelectPage(): void
+    {
+        $pageIds = $this->currentPageIds();
+        $selected = array_map('strval', $this->selected);
+
+        $allOnPage = count(array_diff($pageIds, $selected)) === 0;
+
+        if ($allOnPage) {
+            $this->selected = array_values(array_filter($selected, fn ($id) => ! in_array($id, $pageIds, true)));
+        } else {
+            $this->selected = array_values(array_unique(array_merge($selected, $pageIds)));
+        }
+    }
+
+    public function bulkDelete(): void
+    {
+        $ids = array_filter($this->selected);
+        if (empty($ids)) {
+            return;
+        }
+
+        $modelClass = $this->resolveModel();
+        $key = (new $modelClass)->getKeyName();
+
+        $deleted = $this->query()->whereIn($key, $ids)->delete();
+        $this->selected = [];
+        $this->bulkStatus = '';
+        session()->flash('message', "{$deleted} record(s) deleted.");
+    }
+
+    public function bulkUpdateStatus(): void
+    {
+        $ids = array_filter($this->selected);
+        $hasStatusField = collect($this->resourceConfig()['fields'])->contains(fn ($f) => $f['name'] === 'status');
+        if (empty($ids) || $this->bulkStatus === '' || ! $hasStatusField) {
+            return;
+        }
+
+        $modelClass = $this->resolveModel();
+        $key = (new $modelClass)->getKeyName();
+
+        $this->query()->whereIn($key, $ids)->update(['status' => $this->bulkStatus]);
+        $this->selected = [];
+        $this->bulkStatus = '';
+        session()->flash('message', 'Status updated for ' . count($ids) . ' record(s).');
+    }
+
+    public function exportCsv()
+    {
+        $config = $this->resourceConfig();
+        $rows = $this->filteredQuery()->get();
+        $columns = collect($config['columns']);
+
+        $filename = \Illuminate\Support\Str::slug($config['title']) . '-' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($rows, $columns) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, $columns->pluck('label')->all());
+            foreach ($rows as $item) {
+                fputcsv($out, $columns->map(fn ($col) => $this->csvCell(data_get($item, $col['key'])))->all());
+            }
+            fclose($out);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    protected function csvCell(mixed $value): string
+    {
+        if ($value instanceof \Carbon\CarbonInterface) {
+            return $value->format('Y-m-d H:i');
+        }
+        if (is_array($value)) {
+            return implode(', ', $value);
+        }
+        if (is_bool($value)) {
+            return $value ? 'Yes' : 'No';
+        }
+        if (is_string($value) && str_starts_with($value, 'data:')) {
+            return '(uploaded file)';
+        }
+
+        return (string) ($value ?? '');
+    }
+
+    protected function statusBadge(string $status): string
+    {
+        return match (strtolower($status)) {
+            'pending' => 'bg-amber-100 text-amber-800',
+            'new' => 'bg-primary-soft text-primary',
+            'confirmed', 'active', 'hired', 'completed', 'offered' => 'bg-emerald-100 text-emerald-800',
+            'responded', 'reviewed', 'interviewed' => 'bg-sky-100 text-sky-800',
+            'cancelled', 'rejected' => 'bg-emergency-soft text-emergency',
+            'archived', 'inactive' => 'bg-muted text-muted-foreground',
+            default => 'bg-muted text-muted-foreground',
+        };
+    }
+
+    protected function filteredQuery()
+    {
+        $config = $this->resourceConfig();
+        $query = $this->query();
+
+        if ($this->search !== '') {
+            $query->where(function ($q) use ($config) {
+                foreach ($config['search'] as $index => $key) {
+                    $method = $index === 0 ? 'where' : 'orWhere';
+                    $q->{$method}($key, 'like', "%{$this->search}%");
+                }
+            });
+        }
+
+        if ($this->sortKey) {
+            $query->orderBy($this->sortKey, $this->sortDir);
+        } else {
+            $query->latest();
+        }
+
+        return $query;
+    }
+
+    protected function currentPageIds(): array
+    {
+        $items = $this->filteredQuery()->paginate(20);
+        $key = (new ($this->resolveModel()))->getKeyName();
+
+        return $items->pluck($key)->map(fn ($v) => (string) $v)->all();
+    }
 
     protected array $resourceMap = [
         'appointments' => Appointment::class,
@@ -103,6 +253,20 @@ public string $resource;
     public function save(): void
     {
         $modelClass = $this->resolveModel();
+
+        $rules = [];
+        $messages = [];
+        foreach ($this->resourceConfig()['fields'] as $field) {
+            if ($field['required']) {
+                $rules['form.' . $field['name']] = ['required'];
+                $messages['form.' . $field['name'] . '.required'] = $field['label'] . ' is required.';
+            }
+        }
+
+        if ($rules) {
+            $this->validate($rules, $messages);
+        }
+
         $data = $this->coercedFormData();
 
         if ($modelClass === AdminUser::class) {
@@ -114,6 +278,13 @@ public string $resource;
         }
 
         if ($this->creating) {
+            if (isset($data['slug']) && empty($data['slug'])) {
+                $source = $data['name'] ?? $data['title'] ?? '';
+                if ($source !== '') {
+                    $data['slug'] = \Illuminate\Support\Str::slug($source);
+                }
+            }
+
             if ($modelClass === Appointment::class && empty($data['id'])) {
                 $data['id'] = 'APT-' . substr((string) time(), -6);
             }
@@ -162,19 +333,16 @@ public string $resource;
     public function render()
     {
         $config = $this->resourceConfig();
-        $query = $this->query();
-
-        if ($this->search !== '') {
-            $query->where(function ($q) use ($config) {
-                foreach ($config['search'] as $index => $key) {
-                    $method = $index === 0 ? 'where' : 'orWhere';
-                    $q->{$method}($key, 'like', "%{$this->search}%");
-                }
-            });
-        }
-
         $total = $this->query()->count();
-        $items = $query->latest()->paginate(20);
+        $items = $this->filteredQuery()->paginate(20);
+
+        $keyName = (new ($this->resolveModel()))->getKeyName();
+        $pageIds = $items->pluck($keyName)->map(fn ($v) => (string) $v)->all();
+        $selected = array_map('strval', $this->selected);
+        $selectPage = count($pageIds) > 0 && count(array_diff($pageIds, $selected)) === 0;
+
+        $statusField = collect($config['fields'])->first(fn ($f) => $f['name'] === 'status' && $f['type'] === 'select');
+        $statusOptions = $statusField['options'] ?? [];
 
         return $this->view([
             'items' => $items,
@@ -184,6 +352,11 @@ public string $resource;
             'columns' => $config['columns'],
             'fields' => $config['fields'],
             'viewable' => $config['viewable'] ?? true,
+            'sortable' => collect($config['columns'])->reject(fn ($c) => in_array($c['type'] ?? 'text', ['image', 'image_text']))->pluck('key')->all(),
+            'sortKey' => $this->sortKey,
+            'sortDir' => $this->sortDir,
+            'selectPage' => $selectPage,
+            'statusOptions' => $statusOptions,
             'modalTitle' => ($this->creating ? 'New ' : 'Edit ') . rtrim($config['title'], 's'),
         ])->layout('layouts.admin', ['title' => $config['title'].' — Admin']);
     }
@@ -545,6 +718,7 @@ public string $resource;
                 'search' => ['name', 'email', 'phone', 'status'],
                 'columns' => $this->columns(['name' => 'Applicant', 'email' => 'Email', 'job_title' => 'Position', 'status' => 'Status', 'created_at' => 'Applied']),
                 'fields' => [
+                    $this->field('job_opening_id', 'Job opening', 'select', required: true, options: JobOpening::query()->orderBy('title')->get()->map(fn ($j) => ['value' => $j->getKey(), 'label' => $j->title])->all()),
                     $this->field('name', 'Full name', 'text', required: true),
                     $this->field('email', 'Email', 'email', required: true),
                     $this->field('phone', 'Phone'),
@@ -707,11 +881,42 @@ public string $resource;
                 <p class="text-sm text-muted-foreground mt-1">{{ $description }}</p>
             @endif
         </div>
-        <x-ui.button wire:click="create">
-            @svg('lucide-plus', 'h-4 w-4')
-            New
-        </x-ui.button>
+        <div class="flex items-center gap-2">
+            @if($items->total() > 0)
+                <x-ui.button variant="outline" wire:click="exportCsv" title="Download the current results as CSV">
+                    @svg('lucide-download', 'h-4 w-4')
+                    Export CSV
+                </x-ui.button>
+            @endif
+            <x-ui.button wire:click="create">
+                @svg('lucide-plus', 'h-4 w-4')
+                New
+            </x-ui.button>
+        </div>
     </div>
+
+    @if(count(array_filter($selected)) > 0)
+        <div class="flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary-soft px-4 py-3">
+            <span class="text-sm font-semibold text-primary">{{ count(array_filter($selected)) }} selected</span>
+            @if(count($statusOptions) > 0)
+                <select
+                    wire:model="bulkStatus"
+                    class="px-2.5 py-1.5 text-xs rounded-md bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                    <option value="">Set status…</option>
+                    @foreach($statusOptions as $option)
+                        <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                    @endforeach
+                </select>
+                <x-ui.button size="sm" wire:click="bulkUpdateStatus" :disabled="$bulkStatus === ''">Apply</x-ui.button>
+            @endif
+            <x-ui.button size="sm" variant="destructive" wire:click="bulkDelete" wire:confirm="Delete {{ count(array_filter($selected)) }} selected record(s)?">
+                @svg('lucide-trash-2', 'h-3.5 w-3.5')
+                Delete selected
+            </x-ui.button>
+            <button type="button" wire:click="$set('selected', [])" class="text-xs font-medium text-muted-foreground hover:text-foreground ml-auto">Clear selection</button>
+        </div>
+    @endif
 
     <div class="bg-surface rounded-xl border border-border overflow-hidden">
         <div class="p-3 border-b border-border flex items-center gap-2">
@@ -728,8 +933,28 @@ public string $resource;
             <table class="w-full text-sm">
                 <thead class="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
                     <tr>
+                        <th class="px-4 py-3 w-1">
+                            <input
+                                type="checkbox"
+                                wire:change="toggleSelectPage"
+                                @checked($selectPage)
+                                aria-label="Select all on page"
+                                class="rounded border-border accent-primary"
+                            />
+                        </th>
                         @foreach($columns as $col)
-                            <th class="text-left px-4 py-3 font-semibold">{{ $col['label'] }}</th>
+                            @php $sortableCol = in_array($col['key'], $sortable); @endphp
+                            <th
+                                class="text-left px-4 py-3 font-semibold {{ $sortableCol ? 'cursor-pointer select-none hover:text-foreground' : '' }}"
+                                @if($sortableCol) wire:click="sortBy('{{ $col['key'] }}')" @endif
+                            >
+                                <span class="inline-flex items-center gap-1">
+                                    {{ $col['label'] }}
+                                    @if($sortKey === $col['key'])
+                                        @svg($sortDir === 'asc' ? 'lucide-arrow-up' : 'lucide-arrow-down', 'h-3 w-3')
+                                    @endif
+                                </span>
+                            </th>
                         @endforeach
                         <th class="px-4 py-3 text-right font-semibold w-1">Actions</th>
                     </tr>
@@ -737,10 +962,21 @@ public string $resource;
                 <tbody class="divide-y divide-border">
                     @forelse($items as $item)
                         <tr class="hover:bg-muted/30">
+                            <td class="px-4 py-3 w-1">
+                                <input
+                                    type="checkbox"
+                                    wire:model.live="selected"
+                                    value="{{ $item->getKey() }}"
+                                    aria-label="Select row"
+                                    class="rounded border-border accent-primary"
+                                />
+                            </td>
                             @foreach($columns as $col)
                                 <td class="px-4 py-3 align-top max-w-xs">
                                     @php $val = data_get($item, $col['key']); @endphp
-                                    @if(($col['type'] ?? 'text') === 'image' && $val)
+                                    @if($col['key'] === 'status' && $val)
+                                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold {{ $this->statusBadge((string) $val) }}">{{ ucwords(str_replace('-', ' ', (string) $val)) }}</span>
+                                    @elseif(($col['type'] ?? 'text') === 'image' && $val)
                                         <div class="flex items-center gap-3">
                                             <div class="size-10 rounded-full overflow-hidden bg-muted shrink-0">
                                                 <img src="{{ $this->displayUrl($val) }}" alt="" class="size-full object-cover" loading="lazy" />
@@ -784,7 +1020,11 @@ public string $resource;
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ count($columns) + 1 }}" class="px-4 py-12 text-center text-muted-foreground text-sm">No records yet. Click New to create one.</td>
+                            <td colspan="{{ count($columns) + 2 }}" class="px-4">
+                                <x-feedback.empty-state size="sm" title="No records found" description="Try adjusting your search, or click New to add your first record.">
+                                    <x-slot:icon>@svg('lucide-inbox', 'h-14 w-14')</x-slot:icon>
+                                </x-feedback.empty-state>
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -883,6 +1123,16 @@ public string $resource;
                     <button type="button" wire:click="closeModal" class="text-muted-foreground hover:text-foreground text-sm">Close</button>
                 </div>
                 <form wire:submit="save" class="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+                    @if($errors->any())
+                        <div class="rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                            <p class="font-semibold mb-1">Please fix the following:</p>
+                            <ul class="list-disc pl-4 space-y-0.5">
+                                @foreach($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
                     @foreach($fields as $field)
                         @php $name = $field['name']; $helper = $field['helper'] ?: null; @endphp
 
@@ -963,6 +1213,17 @@ public string $resource;
                                     <p class="text-xs text-muted-foreground mt-1">{{ $helper }}</p>
                                 @endif
                             </div>
+                        @elseif(($field['name'] === 'name' || $field['name'] === 'title') && $creating)
+                            <x-form.input
+                                variant="admin"
+                                type="text"
+                                :label="$field['label']"
+                                :required="$field['required']"
+                                :hint="$helper"
+                                wire:model="form.{{ $name }}"
+                                placeholder="{{ $field['placeholder'] ?? '' }}"
+                                x-on:input="if (($wire.get('form.slug') ?? '') === '') { $wire.set('form.slug', $el.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')) }"
+                            />
                         @else
                             <x-form.input variant="admin" type="{{ $field['type'] === 'tags' ? 'text' : $field['type'] }}" :label="$field['label']" :required="$field['required']" :hint="$helper" wire:model="form.{{ $name }}" placeholder="{{ $field['placeholder'] ?? '' }}" />
                         @endif
