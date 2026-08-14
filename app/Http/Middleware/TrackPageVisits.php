@@ -41,7 +41,8 @@ class TrackPageVisits
         try {
             $this->record($request);
         } catch (\Throwable $e) {
-            // Analytics must never break the site.
+            // Analytics must never break the site, but failures should be visible in the logs.
+            report($e);
         }
 
         return $response;
