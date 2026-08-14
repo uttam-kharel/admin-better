@@ -21,12 +21,8 @@ new class extends Component
 };
 
 ?>
-<div x-data
-     x-ref="panel"
-     x-init="const stored = Alpine.store('adminSidebar'); if (stored && stored.scroll) $el.scrollTop = stored.scroll"
-     x-on:livewire:navigating.window="Alpine.store('adminSidebar', { scroll: $el.scrollTop })"
-     class="hidden lg:flex w-64 shrink-0 border-r border-border bg-surface flex-col h-dvh overflow-y-auto">
-    <div class="px-5 py-5 border-b border-border">
+<div class="hidden lg:flex w-64 shrink-0 border-r border-border bg-surface flex-col h-dvh">
+    <div class="px-5 py-5 border-b border-border shrink-0">
         <a href="{{ route('admin.dashboard') }}" wire:navigate class="flex items-center gap-2.5">
             <div class="size-9 rounded-lg bg-primary text-primary-foreground grid place-items-center font-bold">S</div>
             <div>
@@ -35,7 +31,11 @@ new class extends Component
             </div>
         </a>
     </div>
-    <nav class="px-3 py-4 space-y-5">
+    <nav x-data
+         x-ref="panel"
+         x-init="const stored = Alpine.store('adminSidebar'); if (stored && stored.scroll) $el.scrollTop = stored.scroll"
+         x-on:livewire:navigating.window="Alpine.store('adminSidebar', { scroll: $el.scrollTop })"
+         class="flex-1 overflow-y-auto px-3 py-4 space-y-5">
         @php
         $groups = [
             [
