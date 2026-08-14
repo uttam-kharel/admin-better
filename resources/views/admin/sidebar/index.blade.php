@@ -23,8 +23,8 @@ new class extends Component
 ?>
 <div x-data
      x-ref="panel"
-     x-init="$el.scrollTop = parseInt(localStorage.getItem('adminSidebarScroll') || '0', 10)"
-     x-on:livewire:navigating.window="localStorage.setItem('adminSidebarScroll', String($el.scrollTop))"
+     x-init="const stored = Alpine.store('adminSidebar'); if (stored && stored.scroll) $el.scrollTop = stored.scroll"
+     x-on:livewire:navigating.window="Alpine.store('adminSidebar', { scroll: $el.scrollTop })"
      class="hidden lg:flex w-64 shrink-0 border-r border-border bg-surface flex-col h-dvh overflow-y-auto">
     <div class="px-5 py-5 border-b border-border">
         <a href="{{ route('admin.dashboard') }}" wire:navigate class="flex items-center gap-2.5">
