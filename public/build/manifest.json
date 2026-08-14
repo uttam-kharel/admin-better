@@ -1,4 +1,16 @@
 {
+  "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-wght-normal.woff2": {
+    "file": "assets/fraunces-latin-ext-wght-normal-Ca2vKHc0.woff2",
+    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-ext-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2": {
+    "file": "assets/fraunces-latin-wght-normal-ukD16Tqj.woff2",
+    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-latin-wght-normal.woff2"
+  },
+  "node_modules/@fontsource-variable/fraunces/files/fraunces-vietnamese-wght-normal.woff2": {
+    "file": "assets/fraunces-vietnamese-wght-normal-CnvboYUG.woff2",
+    "src": "node_modules/@fontsource-variable/fraunces/files/fraunces-vietnamese-wght-normal.woff2"
+  },
   "node_modules/@fontsource/inter/files/inter-cyrillic-400-normal.woff": {
     "file": "assets/inter-cyrillic-400-normal-HOLc17fK.woff",
     "src": "node_modules/@fontsource/inter/files/inter-cyrillic-400-normal.woff"
@@ -280,7 +292,7 @@
     "src": "node_modules/@fontsource/inter/files/inter-vietnamese-800-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-xRVMBtAD.css",
+    "file": "assets/app-BrbsRaw4.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",

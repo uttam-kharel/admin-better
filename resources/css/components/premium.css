@@ -25,6 +25,25 @@ html.js .reveal.in { opacity: 1; transform: none; }
   letter-spacing: -0.02em;
 }
 
+/* ---- Signature: vital-signs pulse line ----
+   The one memorable motif — an ECG trace that draws itself under the
+   hero headline. Rests still after drawing; no ambient looping. */
+.vitals-line {
+  display: block;
+  width: 100%;
+  max-width: 13rem;
+  height: 2.25rem;
+  color: var(--color-primary);
+}
+.vitals-line path {
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+  animation: vitals-draw 1.3s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
+}
+@keyframes vitals-draw {
+  to { stroke-dashoffset: 0; }
+}
+
 /* ---- Button lift (scale 1.02 + shadow growth) ---- */
 .btn-lift {
   transition: transform 0.26s cubic-bezier(0.22, 0.61, 0.36, 1),

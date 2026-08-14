@@ -1,1 +1,19 @@
 /* Typography defaults — font families defined in theme/index.css @theme */
+
+/* Display type: the warm Fraunces serif carries the page's personality.
+   Used with restraint — major headings only; body, UI, and data stay Inter. */
+h1, h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-feature-settings: "ss01";
+}
+
+h1 {
+    font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    h1, h2 {
+        font-variation-settings: "opsz" 60;
+    }
+}

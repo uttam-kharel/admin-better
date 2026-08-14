@@ -10,7 +10,8 @@
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.05] text-balance reveal reveal-d1">
                         {{ $slide['title'] }}
                     </h1>
-                    <p class="mt-5 text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed text-pretty reveal reveal-d2">
+                    <x-ui.vitals-line class="mt-5" />
+                    <p class="mt-4 text-base md:text-lg text-muted-foreground max-w-xl leading-relaxed text-pretty reveal reveal-d2">
                         {{ $slide['subtitle'] }}
                     </p>
                     <div class="mt-8 flex flex-wrap gap-3 reveal reveal-d3">

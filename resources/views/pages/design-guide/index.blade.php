@@ -88,6 +88,7 @@ new class extends Component
             <div class="rounded-xl border border-border bg-surface divide-y divide-border">
                 @php
                     $type = [
+                        ['Display (serif)', 'font-display text-3xl font-bold tracking-tight', 'Shubham International Hospital'],
                         ['Page title', 'text-xl font-bold', 'Dashboard'],
                         ['Section title', 'text-lg font-semibold', 'Recent appointments'],
                         ['Section heading', 'text-sm font-semibold text-muted-foreground uppercase tracking-wide', 'Operations'],
@@ -129,6 +130,15 @@ new class extends Component
                 @foreach($badges as [$variant, $label])
                     <x-ui.badge :variant="$variant" dot>{{ $label }}</x-ui.badge>
                 @endforeach
+            </div>
+        </section>
+
+        {{-- ============ Signature ============ --}}
+        <section aria-labelledby="signature-heading">
+            <h2 id="signature-heading" class="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">Signature · vital-signs line</h2>
+            <div class="rounded-xl border border-border bg-surface p-5">
+                <x-ui.vitals-line />
+                <p class="mt-3 text-xs text-muted-foreground max-w-md">The one animated motif on the site — an ECG trace that draws itself under the hero headline. Drawn from the hospital's own instrument language; honours <code class="font-mono">prefers-reduced-motion</code>.</p>
             </div>
         </section>
 
