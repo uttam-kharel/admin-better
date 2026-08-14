@@ -156,12 +156,16 @@ public string $resource;
     {
         // Returns the <x-ui.badge> variant name for a status value.
         return match (strtolower($status)) {
-            'pending' => 'warning',
-            'new' => 'primary',
-            'confirmed', 'active', 'hired', 'completed', 'offered' => 'success',
-            'responded', 'reviewed', 'interviewed' => 'info',
-            'cancelled', 'rejected' => 'danger',
-            'archived', 'inactive' => 'neutral',
+            'pending', 'idle' => 'warning',
+            'new', 'todo' => 'primary',
+            'confirmed', 'active', 'hired', 'completed', 'offered', 'achieved', 'succeeded', 'approved', 'done' => 'success',
+            'responded', 'reviewed' => 'info',
+            'interviewed', 'in_review' => 'violet',
+            'in_progress' => 'indigo',
+            'running' => 'cyan',
+            'paused' => 'orange',
+            'cancelled', 'rejected', 'failed', 'blocked', 'error' => 'danger',
+            'archived', 'planned', 'backlog', 'inactive' => 'neutral',
             default => 'neutral',
         };
     }

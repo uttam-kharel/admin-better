@@ -16,9 +16,8 @@ Route::livewire('/departments', Pages\DepartmentsIndex::class)->name('department
 Route::livewire('/departments/{slug}', Pages\DepartmentsShow::class)->name('departments.show');
 
 Route::livewire('/blogs', Pages\BlogsIndex::class)->name('blogs.index');
-Route::livewire('/blogs/{slug}', Pages\BlogsShow::class)->name('blogs.show');
-
-Route::livewire('/health-packages', 'pages::health-packages.index')->name('health-packages');
+Route::livewire('/blogs/{slug}', Pages\BlogsShow::class)->name('blogs.show');        Route::livewire('/health-packages', 'pages::health-packages.index')->name('health-packages');
+        Route::livewire('/design-guide', 'pages::design-guide.index')->name('design-guide');
 Route::livewire('/gallery', Pages\GalleryIndex::class)->name('gallery');
 Route::livewire('/careers', Pages\CareersIndex::class)->name('careers');
 Route::livewire('/careers/{slug}', Pages\CareersShow::class)->name('careers.show');

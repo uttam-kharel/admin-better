@@ -17,6 +17,7 @@
     @livewireStyles
 </head>
 <body class="min-h-dvh bg-background text-foreground font-sans antialiased">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[9999] focus:rounded-md focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:shadow-card">Skip to main content</a>
     {{ $slot }}
 
     {{-- Go-to-top button — appears after scrolling, safe across Livewire navigations --}}
