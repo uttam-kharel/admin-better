@@ -21,13 +21,12 @@ use App\Models\{
     CmsPage,
     SiteSetting
 };
+use App\Support\PublicCache;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 
 class HomepageIndex extends Component
 {
-    /** Cache key for the static homepage content (invalidated on any admin save/delete). */
-    public const CACHE_KEY = 'site_homepage';
     public array $heroSlides = [];
     public array $quickActions = [];
     public array $stats = [];
@@ -57,7 +56,7 @@ class HomepageIndex extends Component
     {
         // All homepage content is static — cache it as one blob (refreshed on any
         // admin save/delete, with a 1h backstop). Cuts ~17 queries per homepage load.
-        $data = Cache::remember(self::CACHE_KEY, 3600, function () {
+        $data = Cache::remember(PublicCache::HOMEPAGE, PublicCache::TTL, function () {
             $pages = [];
             foreach (['about-us', 'why-choose-us', 'careers'] as $slug) {
                 $page = CmsPage::where('slug', $slug)->first();

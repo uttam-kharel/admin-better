@@ -23,3 +23,5 @@ Thumbs.db
 node_modules
 .vercel
 .env*
+# Template for DB connection — placeholders only, safe to commit
+!.env.new.database

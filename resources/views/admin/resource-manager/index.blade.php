@@ -101,7 +101,7 @@ public string $resource;
         $deleted = $this->query()->whereIn($key, $ids)->delete();
         $this->selected = [];
         $this->bulkStatus = '';
-        \Illuminate\Support\Facades\Cache::forget(\App\Livewire\Pages\HomepageIndex::CACHE_KEY);
+        \App\Support\PublicCache::flush();
         session()->flash('message', "{$deleted} record(s) deleted.");
     }
 
@@ -319,8 +319,8 @@ public string $resource;
             \App\Models\MenuItem::flushCache();
         }
 
-        // Any content change can affect the homepage — refresh its cached sections.
-        \Illuminate\Support\Facades\Cache::forget(\App\Livewire\Pages\HomepageIndex::CACHE_KEY);
+        // Any content change can affect cached public pages — refresh them all.
+        \App\Support\PublicCache::flush();
 
         $this->closeModal();
     }
@@ -328,7 +328,7 @@ public string $resource;
     public function delete(string|int $id): void
     {
         $this->query()->findOrFail($id)->delete();
-        \Illuminate\Support\Facades\Cache::forget(\App\Livewire\Pages\HomepageIndex::CACHE_KEY);
+        \App\Support\PublicCache::flush();
         session()->flash('message', 'Deleted successfully.');
     }
 

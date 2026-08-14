@@ -106,6 +106,17 @@ jobs:
       - name: Build frontend assets
         run: npm run build
 
+      # Performance budget: the public JS bundle must stay lean. Chart.js lives in
+      # the admin-only entry, so the public app-*.js should be well under 350KB.
+      - name: Enforce JS bundle budget
+        run: |
+          size=$(du -k public/build/assets/app-*.js | awk '{s+=$1} END {print s}')
+          echo "Public JS bundle: ${size}KB (budget 350KB)"
+          if [ "$size" -gt 350 ]; then
+            echo "::error::Public JS bundle ${size}KB exceeds the 350KB budget — keep Chart.js and other heavy deps out of the public entry."
+            exit 1
+          fi
+
       # Optional: apply Laravel migrations to the Neon Postgres database.
       # Runs ONLY when the DATABASE_URL secret exists (skips otherwise).
       # NOTE: the secret is referenced in env (not in an if: condition) —
@@ -135,3 +146,13 @@ jobs:
 
       - name: Deploy production to Vercel
         run: npx vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+
+      # Best-effort cache warm-up so the first real visitor doesn't pay the
+      # cold-cache cost (database cache is populated by these requests).
+      - name: Warm production caches
+        continue-on-error: true
+        run: |
+          for p in "/" "/services" "/departments" "/doctors"; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "https://sih-hospital.vercel.app$p" || true)
+            echo "warm $p -> $code"
+          done

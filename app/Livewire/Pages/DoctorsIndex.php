@@ -4,6 +4,8 @@ namespace App\Livewire\Pages;
 
 use App\Models\Department;
 use App\Models\Doctor;
+use App\Support\PublicCache;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -42,7 +44,8 @@ class DoctorsIndex extends Component
         }
 
         $doctors = $query->paginate($this->perPage);
-        $departments = Department::all();
+        // The doctor rows are dynamic (search/filter), but the filter sidebar is static.
+        $departments = Cache::remember(PublicCache::DEPARTMENTS, PublicCache::TTL, fn () => Department::all());
 
         return view('pages.doctors.index', [
             'doctors' => $doctors,
