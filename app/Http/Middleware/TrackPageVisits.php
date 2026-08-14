@@ -84,11 +84,15 @@ class TrackPageVisits
             'full_url' => $request->fullUrl(),
             'referer' => $this->cleanReferer($request->headers->get('referer')),
             'visitor_id' => $visitorId,
+            'ip' => $this->clientIp($request),
             'ip_hash' => $this->hashIp($request),
             'user_agent' => Str::limit((string) $request->userAgent(), 500),
             'device' => $this->deviceType($request->userAgent()),
             'browser' => $this->browserName($request->userAgent()),
-            'is_unique' => $isUnique,
+            'os' => $this->osName($request->userAgent()),
+            'language' => $this->languageTag($request->header('Accept-Language')),
+            // DB literal, not a PHP bool: PDO binds true as 1, which Postgres rejects for boolean columns.
+            'is_unique' => \Illuminate\Support\Facades\DB::raw($isUnique ? $this->boolTrue() : $this->boolFalse()),
         ]);
 
         $this->setVisitorCookie($request, $visitorId);
@@ -188,5 +192,57 @@ class TrackPageVisits
         }
 
         return 'Other';
+    }
+
+    protected function osName(?string $ua): string
+    {
+        $ua = strtolower((string) $ua);
+
+        $map = [
+            'windows nt 11' => 'Windows 11',
+            'windows nt 10' => 'Windows 10',
+            'windows nt 6.3' => 'Windows 8.1',
+            'windows nt 6.2' => 'Windows 8',
+            'windows nt 6.1' => 'Windows 7',
+            'windows' => 'Windows',
+            'android' => 'Android',
+            'iphone' => 'iOS',
+            'ipad' => 'iPadOS',
+            'mac os x' => 'macOS',
+            'macintosh' => 'macOS',
+            'linux' => 'Linux',
+            'ubuntu' => 'Ubuntu',
+            'cros' => 'ChromeOS',
+        ];
+
+        foreach ($map as $needle => $name) {
+            if (str_contains($ua, $needle)) {
+                return $name;
+            }
+        }
+
+        return 'Other';
+    }
+
+    protected function languageTag(?string $acceptLanguage): ?string
+    {
+        if (! $acceptLanguage) {
+            return null;
+        }
+
+        // First tag before comma, e.g. "en-US,en;q=0.9" -> "en-US".
+        $first = explode(',', $acceptLanguage)[0] ?? '';
+
+        return trim(explode(';', $first)[0]) ?: null;
+    }
+
+    protected function boolTrue(): string
+    {
+        return \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'true' : '1';
+    }
+
+    protected function boolFalse(): string
+    {
+        return \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql' ? 'false' : '0';
     }
 }

@@ -25,6 +25,9 @@ new class extends Component
     public $hourly;
     public $deviceSplit;
     public $browserSplit;
+    public $visitors;
+    public $osSplit;
+    public $languageSplit;
 
     public function mount(): void
     {
@@ -92,17 +95,21 @@ new class extends Component
 
         return response()->streamDownload(function () use ($rows) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Date', 'Time', 'Path', 'Referrer', 'Device', 'Browser', 'Visitor ID', 'IP Hash', 'Type']);
+            fputcsv($out, ['Date', 'Time', 'Path', 'Referrer', 'IP', 'Location', 'Device', 'Browser', 'OS', 'Language', 'Visitor ID', 'Type']);
             foreach ($rows as $v) {
+                $info = is_array($v->ip_info) && ! empty($v->ip_info['city']) ? $v->ip_info : null;
                 fputcsv($out, [
                     $v->created_at->format('Y-m-d'),
                     $v->created_at->format('H:i'),
                     $v->path,
                     $v->referer ?? '',
+                    $v->ip ?? '',
+                    $info ? trim($info['city'].', '.($info['regionName'] ?? '').', '.($info['countryCode'] ?? ''), ', ') : '',
                     $v->device ?? '',
                     $v->browser ?? '',
+                    $v->os ?? '',
+                    $v->language ?? '',
                     $v->visitor_id,
-                    $v->ip_hash,
                     $v->is_unique ? 'new' : 'returning',
                 ]);
             }
@@ -209,6 +216,87 @@ new class extends Component
             ->orderByDesc('total')
             ->get();
 
+        $this->osSplit = (clone $base)
+            ->selectRaw("COALESCE(os, 'Other') as os, count(*) as total")
+            ->groupBy('os')
+            ->orderByDesc('total')
+            ->get();
+
+        $this->languageSplit = (clone $base)
+            ->selectRaw("COALESCE(language, '—') as language, count(*) as total")
+            ->groupBy('language')
+            ->orderByDesc('total')
+            ->get();
+
+        // Geo-resolve IPs we have not looked up yet (cached forever in ip_info).
+        $this->resolveUnknownIps();
+
+        $this->visitors = (clone $base)
+            ->selectRaw("visitor_id, ip, COALESCE(device, 'unknown') as device, browser, os, language, min(created_at) as first_seen, max(created_at) as last_seen, count(*) as visits, count(distinct path) as pages")
+            ->groupBy('visitor_id', 'ip', 'device', 'browser', 'os', 'language')
+            ->orderByDesc('last_seen')
+            ->take(30)
+            ->get();
+
+        // Attach geo info separately (Postgres json has no equality operator, so it can't be grouped).
+        $ips = $this->visitors->pluck('ip')->filter()->unique()->values();
+        if ($ips->isNotEmpty()) {
+            $geoMap = PageVisit::whereIn('ip', $ips)->whereNotNull('ip_info')->get(['ip', 'ip_info'])->keyBy('ip');
+            foreach ($this->visitors as $visitor) {
+                $visitor->ip_info = $geoMap->get($visitor->ip)?->ip_info;
+            }
+        }
+    }
+
+    /**
+     * Look up city/country/ISP for IPs that have no cached geo result.
+     * Best-effort: never blocks or breaks the page. Results are stored in
+     * ip_info so each IP is resolved at most once.
+     */
+    protected function resolveUnknownIps(): void
+    {
+        try {
+            $ips = PageVisit::query()
+                ->whereNotNull('ip')
+                ->where('ip', '!=', '')
+                ->whereNull('ip_info')
+                ->pluck('ip')
+                ->unique()
+                ->take(50)
+                ->values()
+                ->all();
+
+            if (count($ips) === 0) {
+                return;
+            }
+
+            $client = new \Illuminate\Http\Client\Factory();
+            $resp = $client->timeout(5)
+                ->connectTimeout(3)
+                ->asJson()
+                ->post('http://ip-api.com/batch', array_map(fn ($ip) => [
+                    'query' => $ip,
+                    'fields' => 'status,message,query,country,countryCode,regionName,city,zip,isp,org,as,timezone',
+                ], $ips));
+
+            if (! $resp->successful()) {
+                return;
+            }
+
+            foreach ($resp->json() as $result) {
+                if (! is_array($result) || ! isset($result['query'])) {
+                    continue;
+                }
+                $ip = $result['query'];
+                $info = ($result['status'] ?? '') === 'success'
+                    ? $result
+                    : ['failed' => true]; // cache the miss so we don't retry every page load
+
+                PageVisit::where('ip', $ip)->update(['ip_info' => json_encode($info)]);
+            }
+        } catch (\Throwable $e) {
+            // Geolocation is a nice-to-have; never break the analytics page.
+        }
     }
 
     public function render()
@@ -223,7 +311,10 @@ new class extends Component
                 $w->where('path', 'like', "%{$q}%")
                     ->orWhere('referer', 'like', "%{$q}%")
                     ->orWhere('browser', 'like', "%{$q}%")
-                    ->orWhere('device', 'like', "%{$q}%");
+                    ->orWhere('device', 'like', "%{$q}%")
+                    ->orWhere('ip', 'like', "%{$q}%")
+                    ->orWhere('os', 'like', "%{$q}%")
+                    ->orWhere('language', 'like', "%{$q}%");
             });
         }
 
@@ -463,11 +554,128 @@ new class extends Component
         </x-ui.card>
     </div>
 
+    <div class="grid md:grid-cols-2 gap-4">
+        <x-ui.card padding="none" class="overflow-hidden">
+            <div class="px-5 py-4 border-b border-border">
+                <h3 class="font-semibold text-sm">Operating systems</h3>
+            </div>
+            @if($osSplit->count() === 0)
+                <p class="p-6 text-sm text-muted-foreground">No visits recorded.</p>
+            @else
+                <ul class="divide-y divide-border">
+                    @foreach($osSplit as $os)
+                        @php $pct = $kpis['total'] > 0 ? round($os->total / $kpis['total'] * 100, 1) : 0; @endphp
+                        <li class="px-5 py-3">
+                            <div class="flex items-center justify-between gap-3 text-sm">
+                                <span class="font-medium capitalize truncate">{{ $os->os }}</span>
+                                <span class="text-xs text-muted-foreground tabular-nums shrink-0">{{ number_format($os->total) }}</span>
+                            </div>
+                            <div class="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
+                                <div class="h-full rounded-full bg-primary" style="width: {{ max(2, $pct) }}%"></div>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </x-ui.card>
+
+        <x-ui.card padding="none" class="overflow-hidden">
+            <div class="px-5 py-4 border-b border-border">
+                <h3 class="font-semibold text-sm">Languages</h3>
+            </div>
+            @if($languageSplit->count() === 0)
+                <p class="p-6 text-sm text-muted-foreground">No visits recorded.</p>
+            @else
+                <ul class="divide-y divide-border">
+                    @foreach($languageSplit as $lang)
+                        @php $pct = $kpis['total'] > 0 ? round($lang->total / $kpis['total'] * 100, 1) : 0; @endphp
+                        <li class="px-5 py-3">
+                            <div class="flex items-center justify-between gap-3 text-sm">
+                                <span class="font-medium uppercase truncate">{{ $lang->language }}</span>
+                                <span class="text-xs text-muted-foreground tabular-nums shrink-0">{{ number_format($lang->total) }}</span>
+                            </div>
+                            <div class="mt-2 h-1.5 rounded-full bg-muted overflow-hidden">
+                                <div class="h-full rounded-full bg-primary" style="width: {{ max(2, $pct) }}%"></div>
+                            </div>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </x-ui.card>
+    </div>
+
+    <x-ui.card padding="none" class="overflow-hidden">
+        <div class="px-5 py-4 border-b border-border">
+            <h3 class="font-semibold text-sm">Visitors <span class="text-muted-foreground font-normal">· {{ $visitors->count() }} shown · newest first</span></h3>
+            <p class="text-xs text-muted-foreground mt-0.5">Each unique visitor grouped by IP &amp; visitor cookie — device, OS, language and location.</p>
+        </div>
+        @if($visitors->count() === 0)
+            <p class="p-6 text-sm text-muted-foreground">No visits recorded.</p>
+        @else
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border">
+                            <th class="px-5 py-2.5 font-semibold">Visitor / IP</th>
+                            <th class="px-5 py-2.5 font-semibold">Location</th>
+                            <th class="px-5 py-2.5 font-semibold">Client</th>
+                            <th class="px-5 py-2.5 font-semibold">Lang</th>
+                            <th class="px-5 py-2.5 font-semibold">Visits</th>
+                            <th class="px-5 py-2.5 font-semibold">Pages</th>
+                            <th class="px-5 py-2.5 font-semibold">First seen</th>
+                            <th class="px-5 py-2.5 font-semibold">Last seen</th>
+                            <th class="px-5 py-2.5 font-semibold">Type</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border">
+                        @foreach($visitors as $visitor)
+                            @php
+                                $geo = is_array($visitor->ip_info) && ! empty($visitor->ip_info['city']) ? $visitor->ip_info : null;
+                                $location = $geo ? trim($geo['city'].', '.($geo['regionName'] ?? '').', '.($geo['countryCode'] ?? ''), ', ') : null;
+                                $client = trim(implode(' · ', array_filter([
+                                    $visitor->device ? ucfirst($visitor->device) : null,
+                                    $visitor->browser,
+                                    $visitor->os,
+                                ])));
+                            @endphp
+                            <tr class="hover:bg-muted/30">
+                                <td class="px-5 py-3">
+                                    <p class="font-mono text-xs">{{ $visitor->ip ?? '—' }}</p>
+                                    <p class="text-[10px] text-muted-foreground truncate max-w-[160px]" title="{{ $visitor->visitor_id }}">{{ substr($visitor->visitor_id, 0, 12) }}…</p>
+                                </td>
+                                <td class="px-5 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                                    @if($location)
+                                        {{ $location }} <span class="text-muted-foreground/50">· {{ $geo['isp'] ?? '' }}</span>
+                                    @else
+                                        <span class="text-muted-foreground/50">—</span>
+                                    @endif
+                                </td>
+                                <td class="px-5 py-3 text-xs text-muted-foreground whitespace-nowrap">{{ $client ?: '—' }}</td>
+                                <td class="px-5 py-3 text-xs text-muted-foreground uppercase">{{ $visitor->language ?? '—' }}</td>
+                                <td class="px-5 py-3 text-xs font-semibold tabular-nums">{{ $visitor->visits }}</td>
+                                <td class="px-5 py-3 text-xs text-muted-foreground tabular-nums">{{ $visitor->pages }}</td>
+                                <td class="px-5 py-3 text-xs text-muted-foreground tabular-nums whitespace-nowrap">{{ \Carbon\Carbon::parse($visitor->first_seen)->format('M j, H:i') }}</td>
+                                <td class="px-5 py-3 text-xs text-muted-foreground tabular-nums whitespace-nowrap">{{ \Carbon\Carbon::parse($visitor->last_seen)->format('M j, H:i') }}</td>
+                                <td class="px-5 py-3">
+                                    @if((int) $visitor->visits <= 1)
+                                        <span class="text-[10px] uppercase tracking-widest font-semibold px-2 py-0.5 rounded bg-primary/10 text-primary">new</span>
+                                    @else
+                                        <span class="text-[10px] uppercase tracking-widest font-semibold px-2 py-0.5 rounded bg-muted text-muted-foreground">returning</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </x-ui.card>
+
     <x-ui.card padding="none" class="overflow-hidden">
         <div class="px-5 py-4 border-b border-border flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h3 class="font-semibold text-sm">All visits</h3>
-                <p class="text-xs text-muted-foreground mt-0.5">Times in Asia/Kathmandu (UTC+5:45)</p>
+                <p class="text-xs text-muted-foreground mt-0.5">Times in Asia/Kathmandu (UTC+5:45) · hover a row for the full user-agent</p>
             </div>
             <input
                 type="search"
@@ -484,17 +692,35 @@ new class extends Component
                     <thead>
                         <tr class="text-left text-[10px] uppercase tracking-widest text-muted-foreground border-b border-border">
                             <th class="px-5 py-2.5 font-semibold">Page</th>
+                            <th class="px-5 py-2.5 font-semibold">IP</th>
+                            <th class="px-5 py-2.5 font-semibold">Location</th>
                             <th class="px-5 py-2.5 font-semibold">Referrer</th>
                             <th class="px-5 py-2.5 font-semibold">Device</th>
                             <th class="px-5 py-2.5 font-semibold">Browser</th>
+                            <th class="px-5 py-2.5 font-semibold">OS</th>
+                            <th class="px-5 py-2.5 font-semibold">Lang</th>
                             <th class="px-5 py-2.5 font-semibold">Type</th>
                             <th class="px-5 py-2.5 font-semibold">Time</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-border">
                         @foreach($recentVisits as $visit)
-                            <tr>
-                                <td class="px-5 py-3 font-medium truncate max-w-[200px]">{{ $visit->path }}</td>
+                            @php
+                                $geo = is_array($visit->ip_info) && ! empty($visit->ip_info['city']) ? $visit->ip_info : null;
+                                $location = $geo ? trim($geo['city'].', '.($geo['regionName'] ?? '').', '.($geo['countryCode'] ?? ''), ', ') : null;
+                            @endphp
+                            <tr class="hover:bg-muted/30">
+                                <td class="px-5 py-3 font-medium truncate max-w-[200px]" title="{{ $visit->full_url ?? $visit->path }}">{{ $visit->path }}</td>
+                                <td class="px-5 py-3 text-xs tabular-nums whitespace-nowrap">
+                                    <span class="font-mono">{{ $visit->ip ?? '—' }}</span>
+                                </td>
+                                <td class="px-5 py-3 text-xs text-muted-foreground whitespace-nowrap">
+                                    @if($location)
+                                        {{ $location }} <span class="text-muted-foreground/50">· {{ $geo['isp'] ?? '' }}</span>
+                                    @else
+                                        <span class="text-muted-foreground/50">—</span>
+                                    @endif
+                                </td>
                                 <td class="px-5 py-3 text-xs text-muted-foreground truncate max-w-[180px]">
                                     @if($visit->referer)
                                         {{ parse_url($visit->referer, PHP_URL_HOST) }}
@@ -504,6 +730,8 @@ new class extends Component
                                 </td>
                                 <td class="px-5 py-3 text-xs text-muted-foreground capitalize">{{ $visit->device ?? '—' }}</td>
                                 <td class="px-5 py-3 text-xs text-muted-foreground">{{ $visit->browser ?? '—' }}</td>
+                                <td class="px-5 py-3 text-xs text-muted-foreground">{{ $visit->os ?? '—' }}</td>
+                                <td class="px-5 py-3 text-xs text-muted-foreground uppercase">{{ $visit->language ?? '—' }}</td>
                                 <td class="px-5 py-3">
                                     @if($visit->is_unique)
                                         <span class="text-[10px] uppercase tracking-widest font-semibold px-2 py-0.5 rounded bg-primary/10 text-primary">new</span>
@@ -511,7 +739,7 @@ new class extends Component
                                         <span class="text-[10px] uppercase tracking-widest font-semibold px-2 py-0.5 rounded bg-muted text-muted-foreground">returning</span>
                                     @endif
                                 </td>
-                                <td class="px-5 py-3 text-xs text-muted-foreground tabular-nums whitespace-nowrap">{{ \Carbon\Carbon::parse($visit->created_at)->format('M j, H:i') }}</td>
+                                <td class="px-5 py-3 text-xs text-muted-foreground tabular-nums whitespace-nowrap" title="{{ $visit->user_agent }}">{{ \Carbon\Carbon::parse($visit->created_at)->format('M j, H:i') }}</td>
                             </tr>
                         @endforeach
                     </tbody>
