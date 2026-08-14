@@ -25,3 +25,6 @@ node_modules
 .env*
 # Template for DB connection — placeholders only, safe to commit
 !.env.new.database
+
+# Freebuff app-internal state (contains credentials; 14MB of per-session churn)
+.freebuff/
