@@ -1,11 +1,25 @@
-@layer base {
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: oklch(0.5 0.02 245 / 0.2); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: oklch(0.5 0.02 245 / 0.35); }
-  @media (prefers-reduced-motion: no-preference) { ::-webkit-scrollbar-thumb { transition: background 0.15s ease; } }
-  html { scrollbar-width: thin; scrollbar-color: oklch(0.5 0.02 245 / 0.2) transparent; }
-  .dark ::-webkit-scrollbar-thumb { background: oklch(1 0 0 / 0.12); }
-  .dark ::-webkit-scrollbar-thumb:hover { background: oklch(1 0 0 / 0.22); }
-  .dark { scrollbar-color: oklch(1 0 0 / 0.12) transparent; }
-}
+/* ---- Global scrollbars: slim, unobtrusive ---- */
+::selection { background: oklch(0.55 0.19 245 / 0.25); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: oklch(0.5 0.02 245 / 0.2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: oklch(0.5 0.02 245 / 0.35); }
+@media (prefers-reduced-motion: no-preference) { ::-webkit-scrollbar-thumb { transition: background 0.15s ease; } }
+html { scrollbar-width: thin; scrollbar-color: oklch(0.5 0.02 245 / 0.2) transparent; }
+.dark ::-webkit-scrollbar-thumb { background: oklch(1 0 0 / 0.12); }
+.dark ::-webkit-scrollbar-thumb:hover { background: oklch(1 0 0 / 0.22); }
+.dark { scrollbar-color: oklch(1 0 0 / 0.12) transparent; }
+
+/* ---- Scroll container that keeps scrolling but never shows a scrollbar ---- */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ---- Public site: overlay page scrollbar ---- */
+/* Reserve the gutter so hiding/showing the scrollbar never shifts the layout,
+   then only reveal it while the page is actually scrolling (.scrolling is
+   toggled by a tiny listener in the public layout). */
+html.public-site { scrollbar-gutter: stable; scrollbar-width: none; }
+html.public-site::-webkit-scrollbar { display: none; }
+html.public-site.scrolling { scrollbar-width: thin; scrollbar-color: oklch(0.5 0.02 245 / 0.25) transparent; }
+html.public-site.scrolling::-webkit-scrollbar { display: block; }

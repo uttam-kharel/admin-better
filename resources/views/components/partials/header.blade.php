@@ -235,7 +235,7 @@ public function render()
                     @svg('lucide-x', 'h-6 w-6')
                 </button>
             </div>
-            <nav class="flex-1 overflow-y-auto px-4 sm:px-6 py-4 divide-y divide-border" aria-label="Mobile primary">
+            <nav class="flex-1 overflow-y-auto no-scrollbar px-4 sm:px-6 py-4 divide-y divide-border" aria-label="Mobile primary">
                 @foreach($menus as $item)
                     @if($item->children && $item->children->count() > 0)
                         <div>
