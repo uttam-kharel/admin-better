@@ -31,7 +31,7 @@
                             @endforeach
                         </div>
                         <div class="text-sm">
-                            <div class="flex items-center gap-0.5 text-amber-500" aria-label="Rated 4.9 out of 5">@for($i = 0; $i < 5; $i++) @svg('lucide-star', 'h-3.5 w-3.5 fill-current') @endfor</div>
+                            <div class="flex items-center gap-0.5 text-rating" aria-label="Rated 4.9 out of 5">@for($i = 0; $i < 5; $i++) @svg('lucide-star', 'h-3.5 w-3.5 fill-current') @endfor</div>
                             <p class="text-muted-foreground mt-0.5"><strong class="text-foreground">4.9/5</strong> from 2,400+ patients</p>
                         </div>
                     </div>
@@ -353,7 +353,7 @@
                             @svg('lucide-quote', 'h-6 w-6 text-secondary mb-4')
                             <blockquote class="text-sm leading-relaxed flex-1">"{{ $testimonial['quote'] }}"</blockquote>
                             @if($testimonial['rating'])
-                                <div class="mt-5 flex items-center gap-1 text-amber-500">
+                                <div class="mt-5 flex items-center gap-1 text-rating">
                                     @for($i = 0; $i < min(5, $testimonial['rating']); $i++)
                                         @svg('lucide-star', 'h-3.5 w-3.5 fill-current')
                                     @endfor

@@ -29,6 +29,22 @@
   --color-popover-foreground: #0F172A;
   --color-success: #16A34A;
   --color-success-soft: #E8F7EE;
+  /* Status semantics — badge & status colors use these, never raw palette */
+  --color-warning: #D97706;
+  --color-warning-soft: #FEF3C7;
+  --color-info: #0284C7;
+  --color-info-soft: #E0F2FE;
+  --color-cyan: #0E7490;
+  --color-cyan-soft: #CFFAFE;
+  --color-orange: #EA580C;
+  --color-orange-soft: #FFEDD5;
+  --color-indigo: #4F46E5;
+  --color-indigo-soft: #E0E7FF;
+  --color-violet: #7C3AED;
+  --color-violet-soft: #EDE9FE;
+  --color-rating: #F59E0B;
+  --color-primary-deep: #0E62B4;
+  --color-primary-light: #1890DB;
   --color-chart-1: oklch(0.38 0.11 250);
   --color-chart-2: oklch(0.62 0.10 195);
   --color-chart-3: oklch(0.70 0.13 80);

@@ -4,27 +4,29 @@
 ])
 
 @php
+    // All variants use SEMANTIC status tokens (--color-*-soft / --color-*),
+    // never raw palette colors — they adapt to the light/dark theme automatically.
     $variants = [
         // Neutral — archived, planned, backlog, cancelled, inactive
         'neutral' => 'bg-muted text-muted-foreground',
         // Blue — new, todo
         'primary' => 'bg-primary-soft text-primary',
         // Green — active, completed, confirmed, approved, hired
-        'success' => 'bg-emerald-100 text-emerald-800',
+        'success' => 'bg-success-soft text-success',
         // Yellow — pending, idle
-        'warning' => 'bg-amber-100 text-amber-800',
+        'warning' => 'bg-warning-soft text-warning',
         // Sky — responded, reviewed, informational
-        'info'    => 'bg-sky-100 text-sky-800',
+        'info'    => 'bg-info-soft text-info',
         // Red — failed, rejected, cancelled, blocked
         'danger'  => 'bg-emergency-soft text-emergency',
         // Cyan — running
-        'cyan'    => 'bg-cyan-100 text-cyan-800',
+        'cyan'    => 'bg-cyan-soft text-cyan',
         // Orange — paused
-        'orange'  => 'bg-orange-100 text-orange-800',
+        'orange'  => 'bg-orange-soft text-orange',
         // Indigo — in_progress
-        'indigo'  => 'bg-indigo-100 text-indigo-800',
+        'indigo'  => 'bg-indigo-soft text-indigo',
         // Violet — in_review, interviewed
-        'violet'  => 'bg-violet-100 text-violet-800',
+        'violet'  => 'bg-violet-soft text-violet',
     ];
 
     $classes = 'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold whitespace-nowrap '

@@ -183,10 +183,10 @@ public string $search = '';
                 @foreach($tree as $parent)
                     @php $isOpen = in_array($parent['id'], $expanded); $hasChildren = count($parent['children']) > 0;
                         $typeBadge = match($parent['type']) {
-                            'dropdown' => 'bg-amber-100 text-amber-800',
-                            'mega' => 'bg-purple-100 text-purple-800',
-                            'external' => 'bg-orange-100 text-orange-800',
-                            default => 'bg-blue-100 text-blue-800',
+                            'dropdown' => 'bg-warning-soft text-warning',
+                            'mega' => 'bg-violet-soft text-violet',
+                            'external' => 'bg-orange-soft text-orange',
+                            default => 'bg-info-soft text-info',
                         };
                     @endphp
                     <div>
@@ -226,10 +226,10 @@ public string $search = '';
                                 @foreach($parent['children'] as $child)
                                     @php
                                         $childBadge = match($child['type']) {
-                                            'dropdown' => 'bg-amber-100 text-amber-800',
-                                            'mega' => 'bg-purple-100 text-purple-800',
-                                            'external' => 'bg-orange-100 text-orange-800',
-                                            default => 'bg-blue-100 text-blue-800',
+                                            'dropdown' => 'bg-warning-soft text-warning',
+                                            'mega' => 'bg-violet-soft text-violet',
+                                            'external' => 'bg-orange-soft text-orange',
+                                            default => 'bg-info-soft text-info',
                                         };
                                     @endphp
                                     <div class="flex items-center gap-2 px-4 py-2.5 pl-12 hover:bg-muted/30 transition-colors border-b border-border/50 last:border-0">

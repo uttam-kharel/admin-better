@@ -73,7 +73,7 @@ public string $email = '';
             <p class="text-sm text-muted-foreground mt-1.5">Use your administrator credentials.</p>
 
             @if($error)
-                <p class="mt-4 text-sm text-red-500">{{ $error }}</p>
+                <p class="mt-4 text-sm text-emergency">{{ $error }}</p>
             @endif
 
             <form wire:submit="login" class="mt-8 space-y-4">

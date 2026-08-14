@@ -10,7 +10,7 @@
 ])
 
 <section class="container-page pb-20">
-    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0E62B4] via-primary to-[#1890DB] text-primary-foreground p-8 md:p-14 shadow-elevated">
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-deep via-primary to-primary-light text-primary-foreground p-8 md:p-14 shadow-elevated">
         <div class="absolute inset-0 pointer-events-none" aria-hidden="true" style="background-image: radial-gradient(rgba(255,255,255,0.12) 1.5px, transparent 1.5px); background-size: 30px 30px;"></div>
         <div class="relative grid lg:grid-cols-2 gap-8 items-center">
             <div class="text-center lg:text-left">
@@ -27,7 +27,7 @@
             </div>
             <div class="flex flex-col items-center lg:items-end gap-4">
                 @if($bookUrl)
-                    <a href="{{ $bookUrl }}" wire:navigate class="btn-lift inline-flex items-center gap-2 rounded-md bg-surface px-7 py-3.5 text-sm font-semibold text-foreground shadow-lg hover:bg-background">
+                    <a href="{{ $bookUrl }}" wire:navigate class="btn-lift inline-flex items-center gap-2 rounded-md bg-surface px-7 py-3.5 text-sm font-semibold text-foreground shadow-elevated hover:bg-background">
                         {{ $bookLabel }} @svg('lucide-arrow-right', 'h-4 w-4')
                     </a>
                 @endif

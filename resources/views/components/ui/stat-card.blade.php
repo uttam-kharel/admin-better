@@ -13,7 +13,7 @@
     $deltaValue = $delta !== null ? (float) $delta : null;
     $deltaPositive = $deltaValue !== null && $deltaValue > 0;
     $deltaNegative = $deltaValue !== null && $deltaValue < 0;
-    $deltaClass = $deltaPositive ? 'text-emerald-600' : ($deltaNegative ? 'text-emergency' : 'text-muted-foreground');
+    $deltaClass = $deltaPositive ? 'text-success' : ($deltaNegative ? 'text-emergency' : 'text-muted-foreground');
     $deltaIcon = $deltaPositive ? 'lucide-trending-up' : ($deltaNegative ? 'lucide-trending-down' : 'lucide-minus');
     $deltaText = $deltaValue !== null ? (($deltaPositive ? '+' : '').number_format($deltaValue, 1).'%') : '—';
 @endphp
