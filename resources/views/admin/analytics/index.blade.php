@@ -122,7 +122,8 @@ new class extends Component
 
         $total = (clone $base)->count();
         $unique = (clone $base)->distinct()->count('visitor_id');
-        $newVisits = (clone $base)->where('is_unique', true)->count();
+        // whereRaw: SQLite treats 1 as truthy; Postgres requires a real boolean in WHERE.
+        $newVisits = (clone $base)->whereRaw('is_unique')->count();
         $today = PageVisit::whereDate('created_at', today())->count();
 
         // Previous equal-length period, for % change on the KPI cards.
