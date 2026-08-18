@@ -1,0 +1,15 @@
+# Local development / test-run of the production image.
+# Usage:  docker compose up --build
+# Then open http://localhost:3000
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.vercel
+    ports:
+      - "3000:80"
+    env_file:
+      - .env
+    environment:
+      PORT: "80"
+    restart: unless-stopped

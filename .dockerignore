@@ -1,0 +1,31 @@
+# VCS / tooling
+.git
+.gitignore
+.github
+.claude
+.agents
+.freebuff
+.vercel
+.DS_Store
+
+# Local env — secrets live in Vercel Environment Variables, never in the image.
+.env
+.env.*
+
+# Dependencies are installed inside the image.
+vendor
+node_modules
+
+# Local dev only
+php-dev.ini
+tests
+
+# Runtime artifacts / logs
+*.log
+storage/logs
+storage/pail
+public/hot
+public/storage
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*

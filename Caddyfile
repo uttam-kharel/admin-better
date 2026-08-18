@@ -1,0 +1,12 @@
+# FrankenPHP site config for Vercel container deployments.
+#
+# Binds to $PORT (Vercel sets it; falls back to 80). No hostname, so Caddy
+# never tries to provision certificates — Vercel terminates TLS at the edge.
+# `php_server` serves static files from /app/public and rewrites everything
+# else to Laravel's front controller (public/index.php).
+
+:{$PORT:80} {
+	root * /app/public
+	encode zstd gzip
+	php_server
+}
