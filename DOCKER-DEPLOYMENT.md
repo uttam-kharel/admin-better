@@ -27,11 +27,22 @@ to the old serverless runtime.
 - FrankenPHP (Caddy + PHP 8.4) serves `/app/public`; `php_server` hands every
   non-static request to Laravel's front controller.
 - The container filesystem is **not persistent**, so the entrypoint keeps every
-  file-backed cache in `/tmp`, sessions in cookies, and logs to stderr
-  (same policy as the old `api/index.php`).
-- `config:cache` runs at **boot** (not build) so the env vars Vercel injects at
-  runtime are honored. `route:cache` is skipped because `routes/admin.php` uses
-  a closure.
+  file-backed cache in `/tmp`, sessions in cookies, and logs to stderr — the
+  exact same set of variables the old `api/index.php` set (plus `APP_ENV`/
+  `APP_DEBUG` defaults). It also creates the `/tmp/views` and `/tmp/livewire-tmp`
+  directories Blade and Livewire write to, and fails fast with a clear message
+  if `APP_KEY` is missing. A Vercel env var set in the dashboard always wins
+  over these defaults.
+- On boot the entrypoint prints a **Vercel free-stack report** to the logs
+  (`php artisan vercel:setup` — which of Neon / Blob / KV are configured) and
+  runs `config:cache` so the env vars Vercel injects at runtime are honored.
+  Failures are logged, never silent. `route:cache` is skipped because
+  `routes/admin.php` uses a closure.
+- FrankenPHP runs in **standard mode** (one PHP process per request, like the
+  old serverless runtime). For higher throughput you can opt into worker mode
+  by setting `FRANKENPHP_CONFIG="worker ./public/index.php"` as an env var —
+  the entrypoint leaves it off by default so the first container deploy is the
+  safest possible baseline.
 
 ## Deploying
 
